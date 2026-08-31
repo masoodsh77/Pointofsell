@@ -79,7 +79,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             <span>کنترل پنل مرکزی مدیریت فروشگاه</span>
           </div>
           <h2 className="text-xl font-black tracking-tight text-white">
-            داشبورد وضعیت آجیل و خشکبار زعفران طلایی
+            داشبورد وضعیت آجیل و خشکبار برادران جهانتیغ
           </h2>
           <p className="text-xs text-slate-400">
             خلاصه آمار بلادرنگ صندوق، انبار و عملکرد مالی فروشگاه

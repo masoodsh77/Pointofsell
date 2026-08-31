@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Product, StoreSettings } from '../../types';
-import { apiRequest } from '../../services/api';
-import { formatCurrency, toPersianDigits } from '../../utils/persian';
-import { Barcode as BarcodeIcon, Printer, RefreshCw, Sparkles, Check, Search } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Product, StoreSettings } from "../../types";
+import { apiRequest } from "../../services/api";
+import { formatCurrency, toPersianDigits } from "../../utils/persian";
+import {
+  Barcode as BarcodeIcon,
+  Printer,
+  RefreshCw,
+  Sparkles,
+  Check,
+  Search,
+} from "lucide-react";
 
 interface BarcodeManagerProps {
   settings: StoreSettings | null;
@@ -10,16 +17,16 @@ interface BarcodeManagerProps {
 
 export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [labelCount, setLabelCount] = useState<number>(12);
   const [showPrice, setShowPrice] = useState<boolean>(true);
   const [showStoreName, setShowStoreName] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const loadProducts = async () => {
-    const res = await apiRequest<Product[]>('/products');
+    const res = await apiRequest<Product[]>("/products");
     if (res.success && res.data) {
       setProducts(res.data);
       if (res.data.length > 0 && !selectedProductId) {
@@ -37,15 +44,22 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
   const handleGenerateNewBarcode = async () => {
     if (!selectedProduct) return;
     setIsGenerating(true);
-    const res = await apiRequest<{ barcode: string }>('/products/generate-barcode');
+    const res = await apiRequest<{ barcode: string }>(
+      "/products/generate-barcode",
+    );
     if (res.success && res.data) {
       // Update product with new barcode
-      const updateRes = await apiRequest<Product>(`/products/${selectedProduct.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ barcode: res.data.barcode }),
-      });
+      const updateRes = await apiRequest<Product>(
+        `/products/${selectedProduct.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ barcode: res.data.barcode }),
+        },
+      );
       if (updateRes.success) {
-        setSuccessMsg(`بارکد اختصاصی جدید (${res.data.barcode}) با موفقیت برای محصول ثبت شد.`);
+        setSuccessMsg(
+          `بارکد اختصاصی جدید (${res.data.barcode}) با موفقیت برای محصول ثبت شد.`,
+        );
         loadProducts();
         setTimeout(() => setSuccessMsg(null), 4000);
       }
@@ -61,7 +75,7 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
     (p) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.barcode.includes(searchQuery)
+      p.barcode.includes(searchQuery),
   );
 
   return (
@@ -73,9 +87,12 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
             <BarcodeIcon className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-white">طراحی و چاپ بارکد کالا</h2>
+            <h2 className="text-lg font-black text-white">
+              طراحی و چاپ بارکد کالا
+            </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              تولید بارکد استاندارد برای محصولات فاقد بارکد و چاپ برچسب قیمت روی بسته‌بندی
+              تولید بارکد استاندارد برای محصولات فاقد بارکد و چاپ برچسب قیمت روی
+              بسته‌بندی
             </p>
           </div>
         </div>
@@ -108,7 +125,9 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
 
           {/* Product Search & Select */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-300">انتخاب محصول:</label>
+            <label className="block text-xs font-bold text-slate-300">
+              انتخاب محصول:
+            </label>
             <div className="relative mb-2">
               <input
                 type="text"
@@ -126,7 +145,11 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
               className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-medium text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
             >
               {filteredProducts.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#1e1e1e] text-white">
+                <option
+                  key={p.id}
+                  value={p.id}
+                  className="bg-[#1e1e1e] text-white"
+                >
                   {p.name} - بارکد: {p.barcode}
                 </option>
               ))}
@@ -138,7 +161,9 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
             <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between text-xs">
               <div>
                 <div className="text-slate-400">بارکد فعلی:</div>
-                <div className="font-mono font-bold text-amber-400">{selectedProduct.barcode}</div>
+                <div className="font-mono font-bold text-amber-400">
+                  {selectedProduct.barcode}
+                </div>
               </div>
               <button
                 type="button"
@@ -154,17 +179,19 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
 
           {/* Label Quantity */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-300">تعداد برچسب برای چاپ:</label>
+            <label className="block text-xs font-bold text-slate-300">
+              تعداد برچسب برای چاپ:
+            </label>
             <div className="grid grid-cols-4 gap-2">
-              {[6, 12, 24, 48].map((qty) => (
+              {[1, 2, 3, 4, 5, 12, 24, 48].map((qty) => (
                 <button
                   key={qty}
                   type="button"
                   onClick={() => setLabelCount(qty)}
                   className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                     labelCount === qty
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 border-amber-500 shadow-xs'
-                      : 'bg-white/5 text-slate-300 border-white/5 hover:bg-white/10'
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 border-amber-500 shadow-xs"
+                      : "bg-white/5 text-slate-300 border-white/5 hover:bg-white/10"
                   }`}
                 >
                   {toPersianDigits(qty)} عدد
@@ -201,8 +228,12 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
         <div className="lg:col-span-7 bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-slate-300">پیش‌نمایش برچسب‌های چاپی:</span>
-              <span className="text-[11px] text-slate-500">مناسب کاغذهای لیبل و پرینتر حرارتی</span>
+              <span className="text-xs font-bold text-slate-300">
+                پیش‌نمایش برچسب‌های چاپی:
+              </span>
+              <span className="text-[11px] text-slate-500">
+                مناسب کاغذهای لیبل و پرینتر حرارتی
+              </span>
             </div>
 
             {selectedProduct ? (
@@ -217,7 +248,7 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
                   >
                     {showStoreName && (
                       <div className="text-[10px] font-bold text-slate-700 border-b border-slate-100 w-full pb-1 mb-1 truncate">
-                        {settings?.storeName || 'زعفران طلایی'}
+                        {settings?.storeName || "زعفران طلایی"}
                       </div>
                     )}
 
@@ -228,13 +259,13 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
                     {/* Standard Vector-like Barcode Simulation */}
                     <div className="w-full flex flex-col items-center py-1">
                       <div className="h-10 w-full max-w-[130px] flex items-stretch justify-center gap-[2px] bg-slate-950 px-1 py-0.5 rounded-xs">
-                        {selectedProduct.barcode.split('').map((char, i) => (
+                        {selectedProduct.barcode.split("").map((char, i) => (
                           <div
                             key={i}
                             className={`h-full ${
                               (parseInt(char, 10) + i) % 2 === 0
-                                ? 'bg-white w-[2px]'
-                                : 'bg-transparent w-[3px]'
+                                ? "bg-white w-[2px]"
+                                : "bg-transparent w-[3px]"
                             }`}
                           />
                         ))}
@@ -253,7 +284,9 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center text-slate-500 text-xs">لطفاً یک محصول را انتخاب نمایید.</div>
+              <div className="p-8 text-center text-slate-500 text-xs">
+                لطفاً یک محصول را انتخاب نمایید.
+              </div>
             )}
           </div>
         </div>

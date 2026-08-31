@@ -1,0 +1,92 @@
+{
+  "users": [
+    {
+      "id": "u-admin-1",
+      "username": "admin",
+      "name": "هادی جهانتیغ (مدیر فروشگاه)",
+      "role": "ADMIN",
+      "isActive": true,
+      "createdAt": "2026-08-31T19:14:10.608Z",
+      "passwordHash": "$2b$10$/eugHXY3e88ZrtZeEVSruupxSEinFrhkGphoWbOQDjWgZnTbSz22i"
+    },
+    {
+      "id": "u-seller-1",
+      "username": "seller",
+      "name": "رضا جهانتیغ (صندوق‌دار)",
+      "role": "SELLER",
+      "isActive": true,
+      "createdAt": "2026-08-31T19:14:10.608Z",
+      "passwordHash": "$2b$10$tOhS3owLQQh6LK4bl5qlYeSpYAuabJAnc6zuDdEiOpgGHmkMKlmBK"
+    }
+  ],
+  "categories": [],
+  "products": [],
+  "customers": [
+    {
+      "id": "cust-1",
+      "name": "مشتری عمومی (حضوری)",
+      "phone": "۰۹۰۰۰۰۰۰۰۰۰",
+      "address": "خرید حضوری در فروشگاه",
+      "description": "مشتریان گذری",
+      "totalPurchases": 0,
+      "totalSpent": 0,
+      "createdAt": "2026-08-31T19:14:10.608Z"
+    }
+  ],
+  "suppliers": [],
+  "sales": [],
+  "purchases": [],
+  "stockMovements": [],
+  "expenses": [],
+  "cheques": [],
+  "customerTransactions": [],
+  "settings": {
+    "storeName": "فروشگاه آجیل و خشکبار برادران جهانتیغ",
+    "storePhone": "",
+    "storeAddress": "خراسان رضوی - نیشابور - خیابان خاتم النبین جنوبی ",
+    "logoText": "برادران جهانتیغ",
+    "currency": "تومان",
+    "taxRate": 0,
+    "receiptFooter": "از خرید و اعتماد شما صمیمانه سپاسگزاریم. لطفاً در حفظ فاکتور کوشا باشید.",
+    "receiptTemplate": "CLASSIC_80",
+    "themeColor": "amber",
+    "fontFamily": "vazir",
+    "fontSize": "base",
+    "posTerminal": {
+      "enabled": true,
+      "provider": "BEHPARDAKHT",
+      "connectionType": "LAN_IP",
+      "ipAddress": "192.168.1.150",
+      "port": 8080,
+      "terminalId": "8823491",
+      "merchantId": "1099824",
+      "autoSendOnCardPayment": false,
+      "timeoutSeconds": 60
+    },
+    "backupRetentionDays": 30,
+    "autoBackupEnabled": true
+  },
+  "backups": [
+    {
+      "id": "bk-1788203650610",
+      "filename": "backup-2026-08-31T19-14-10-609Z.json",
+      "fileSizeBytes": 2253,
+      "isManual": false,
+      "createdAt": "2026-08-31T19:14:10.610Z",
+      "recordCounts": {
+        "products": 0,
+        "sales": 0,
+        "purchases": 0,
+        "stockMovements": 0,
+        "customers": 1,
+        "suppliers": 0,
+        "users": 2
+      }
+    }
+  ],
+  "counters": {
+    "invoice": 1003,
+    "purchase": 5002,
+    "barcode": 200000000015
+  }
+}

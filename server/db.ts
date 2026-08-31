@@ -55,10 +55,10 @@ export interface DatabaseSchema {
 }
 
 const defaultSettings: StoreSettings = {
-  storeName: "فروشگاه آجیل و خشکبار زعفران طلایی",
-  storePhone: "۰۲۱-۸۸۷۷۶۶۵۵",
-  storeAddress: "تهران، خیابان ولیعصر، نرسیده به میدان ونک، پلاک ۱۲۸",
-  logoText: "زعفران طلایی",
+  storeName: "فروشگاه آجیل و خشکبار برادران جهانتیغ",
+  storePhone: "",
+  storeAddress: "خراسان رضوی - نیشابور - خیابان خاتم النبین جنوبی ",
+  logoText: "برادران جهانتیغ",
   currency: "تومان",
   taxRate: 0,
   receiptFooter:
@@ -109,50 +109,7 @@ function getInitialSeedData(): DatabaseSchema {
     },
   ];
 
-  const categories: Category[] = [
-    {
-      id: "cat-1",
-      name: "آجیل و مغزها",
-      description: "انواع مغز پسته، بادام، فندق، گردو و آجیل مخلوط",
-      icon: "Nut",
-      color: "#f59e0b",
-    },
-    {
-      id: "cat-2",
-      name: "خشکبار و میوه خشک",
-      description: "انواع کشمش، توت، انجیر خشک، آلو و میوه خشک اسلایس",
-      icon: "Apple",
-      color: "#10b981",
-    },
-    {
-      id: "cat-3",
-      name: "شکلات و تافی",
-      description: "شکلات‌های کادویی، تخته‌ای، تلخ، مغزدار و پذیرایی",
-      icon: "Cookie",
-      color: "#8b5cf6",
-    },
-    {
-      id: "cat-4",
-      name: "شیرینی و آبنبات",
-      description: "نقل، پولکی، آبنبات سنتی، گز و سوهان درجه یک",
-      icon: "Sparkles",
-      color: "#ec4899",
-    },
-    {
-      id: "cat-5",
-      name: "تنقلات و چیپس",
-      description: "چیپس، پفک، پاپ کورن، بادام زمینی روکش‌دار",
-      icon: "Flame",
-      color: "#ef4444",
-    },
-    {
-      id: "cat-6",
-      name: "نوشیدنی و دمنوش",
-      description: "چای اعلا، زعفران، دمنوش گیاهی و هل",
-      icon: "Coffee",
-      color: "#06b6d4",
-    },
-  ];
+  const categories: Category[] = [];
 
   const products: Product[] = [];
 
