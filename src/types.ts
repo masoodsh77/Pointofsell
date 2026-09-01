@@ -29,7 +29,7 @@ export interface User {
   createdAt: string;
 }
 
-export type ProductUnit = 'KG' | 'G' | 'PIECE' | 'PACK' | 'BOX' | 'CARTON';
+export type ProductUnit = 'KG' | 'G' | 'MESGHAL' | 'SOUT' | 'PIECE' | 'PACK' | 'BOX' | 'CARTON';
 
 export interface Category {
   id: string;
@@ -179,7 +179,9 @@ export type StockMovementType =
   | 'SALE_CANCEL'
   | 'ADJUSTMENT'
   | 'RETURN'
-  | 'INITIAL_STOCK';
+  | 'INITIAL_STOCK'
+  | 'WASTE'
+  | 'EXPIRED';
 
 export interface StockMovement {
   id: string;

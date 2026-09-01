@@ -153,22 +153,36 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
     handleBarcodeScanned(barcodeInput);
   };
 
-  // Open Weight Modal
+  // Open Weight & Quantity Modal
   const openWeightModal = (product: Product) => {
     setWeightModalProduct(product);
-    setWeightGrams(500);
-    setWeightCustomKg('0.500');
+    if (product.unit === 'KG') {
+      setWeightGrams(500);
+      setWeightCustomKg('0.500');
+    } else if (product.unit === 'G') {
+      setWeightGrams(250);
+      setWeightCustomKg('250');
+    } else if (product.unit === 'SOUT') {
+      setWeightGrams(500);
+      setWeightCustomKg('500');
+    } else if (product.unit === 'MESGHAL') {
+      setWeightGrams(1);
+      setWeightCustomKg('1');
+    } else {
+      setWeightGrams(1);
+      setWeightCustomKg('1');
+    }
   };
 
   const handleApplyWeight = () => {
     if (!weightModalProduct) return;
-    const kg = parseFloat(weightCustomKg);
-    if (isNaN(kg) || kg <= 0) {
-      setErrorMsg('لطفاً مقدار وزن معتبر وارد کنید.');
+    const qty = parseFloat(weightCustomKg);
+    if (isNaN(qty) || qty <= 0) {
+      setErrorMsg('لطفاً مقدار معتبر وارد کنید.');
       return;
     }
-    addToCart(weightModalProduct, kg);
-    setSuccessToast(`«${weightModalProduct.name}» (${formatWeightOrQuantity(kg, 'KG')}) افزوده شد.`);
+    addToCart(weightModalProduct, qty);
+    setSuccessToast(`«${weightModalProduct.name}» (${formatWeightOrQuantity(qty, weightModalProduct.unit)}) افزوده شد.`);
     setTimeout(() => setSuccessToast(null), 3500);
     setWeightModalProduct(null);
   };
@@ -1038,35 +1052,71 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
             </div>
 
             <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex justify-between items-center text-xs">
-              <span className="text-slate-300">قیمت مصوب هر کیلوگرم:</span>
+              <span className="text-slate-300">قیمت مصوب هر {getUnitLabel(weightModalProduct.unit)}:</span>
               <span className="font-bold text-amber-400 text-sm">
                 {formatCurrency(weightModalProduct.salePrice)}
               </span>
             </div>
 
-            {/* Quick Weight Presets */}
+            {/* Quick Presets */}
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-2">
-                وزن‌های پرکاربرد (پیش‌فرض):
+                مقادیر پرکاربرد ({getUnitLabel(weightModalProduct.unit)}):
               </label>
               <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: '۱۰۰ گرم', kg: '0.100', g: 100 },
-                  { label: '۲۵۰ گرم', kg: '0.250', g: 250 },
-                  { label: '۵۰۰ گرم', kg: '0.500', g: 500 },
-                  { label: '۷۵۰ گرم', kg: '0.750', g: 750 },
-                  { label: '۱ کیلوگرم', kg: '1.000', g: 1000 },
-                  { label: '۱.۵ کیلوگرم', kg: '1.500', g: 1500 },
-                ].map((item) => (
+                {(weightModalProduct.unit === 'KG'
+                  ? [
+                      { label: '۱۰۰ گرم', val: '0.100' },
+                      { label: '۲۵۰ گرم', val: '0.250' },
+                      { label: '۵۰۰ گرم', val: '0.500' },
+                      { label: '۷۵۰ گرم', val: '0.750' },
+                      { label: '۱ کیلوگرم', val: '1.000' },
+                      { label: '۱.۵ کیلو', val: '1.500' },
+                    ]
+                  : weightModalProduct.unit === 'SOUT'
+                  ? [
+                      { label: '۱۰۰ صوت', val: '100' },
+                      { label: '۲۵۰ صوت', val: '250' },
+                      { label: '۵۰۰ صوت', val: '500' },
+                      { label: '۱۰۰۰ صوت (۱ گرم)', val: '1000' },
+                      { label: '۲۰۰۰ صوت', val: '2000' },
+                      { label: '۵۰۰۰ صوت', val: '5000' },
+                    ]
+                  : weightModalProduct.unit === 'MESGHAL'
+                  ? [
+                      { label: '۰.۵ مثقال', val: '0.5' },
+                      { label: '۱ مثقال', val: '1' },
+                      { label: '۲ مثقال', val: '2' },
+                      { label: '۳ مثقال', val: '3' },
+                      { label: '۵ مثقال', val: '5' },
+                      { label: '۱۰ مثقال', val: '10' },
+                    ]
+                  : weightModalProduct.unit === 'G'
+                  ? [
+                      { label: '۵۰ گرم', val: '50' },
+                      { label: '۱۰۰ گرم', val: '100' },
+                      { label: '۲۵۰ گرم', val: '250' },
+                      { label: '۵۰۰ گرم', val: '500' },
+                      { label: '۷۵۰ گرم', val: '750' },
+                      { label: '۱۰۰۰ گرم', val: '1000' },
+                    ]
+                  : [
+                      { label: '۱ ' + getUnitLabel(weightModalProduct.unit), val: '1' },
+                      { label: '۲ ' + getUnitLabel(weightModalProduct.unit), val: '2' },
+                      { label: '۵ ' + getUnitLabel(weightModalProduct.unit), val: '5' },
+                      { label: '۱۰ ' + getUnitLabel(weightModalProduct.unit), val: '10' },
+                      { label: '۲۰ ' + getUnitLabel(weightModalProduct.unit), val: '20' },
+                      { label: '۵۰ ' + getUnitLabel(weightModalProduct.unit), val: '50' },
+                    ]
+                ).map((item) => (
                   <button
-                    key={item.kg}
+                    key={item.val}
                     type="button"
                     onClick={() => {
-                      setWeightCustomKg(item.kg);
-                      setWeightGrams(item.g);
+                      setWeightCustomKg(item.val);
                     }}
                     className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      weightCustomKg === item.kg
+                      weightCustomKg === item.val
                         ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md shadow-amber-500/20'
                         : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
                     }`}
@@ -1080,25 +1130,25 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
             {/* Custom Decimal Input */}
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                یا ورود وزن دقیق (کیلوگرم):
+                یا ورود مقدار دقیق بر حسب {getUnitLabel(weightModalProduct.unit)}:
               </label>
               <input
                 type="number"
-                step="0.001"
-                min="0.001"
+                step="any"
+                min="0.0001"
                 value={weightCustomKg}
                 onChange={(e) => setWeightCustomKg(e.target.value)}
                 className="w-full py-2.5 px-3 bg-white/5 border border-white/10 rounded-xl text-center text-base font-bold text-white focus:outline-hidden focus:ring-2 focus:ring-amber-500 font-mono"
-                placeholder="مثلاً 0.350"
+                placeholder={`مقدار به ${getUnitLabel(weightModalProduct.unit)}`}
               />
             </div>
 
             {/* Live Calculated Price Preview */}
             <div className="p-3.5 bg-black/40 border border-white/5 text-white rounded-2xl flex items-center justify-between">
               <div>
-                <div className="text-[11px] text-slate-400">مبلغ محاسبه شده:</div>
+                <div className="text-[11px] text-slate-400">مقدار انتخاب شده:</div>
                 <div className="text-xs text-amber-300 font-sans">
-                  {formatWeightOrQuantity(parseFloat(weightCustomKg) || 0, 'KG')}
+                  {formatWeightOrQuantity(parseFloat(weightCustomKg) || 0, weightModalProduct.unit)}
                 </div>
               </div>
               <div className="text-base sm:text-lg font-black text-amber-400 font-sans">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Product, Category, ProductUnit } from '../../types';
+import { Product, Category, ProductUnit, StoreSettings } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { apiRequest } from '../../services/api';
 import {
@@ -10,6 +10,7 @@ import {
 } from '../../utils/persian';
 import { CameraBarcodeScannerModal } from '../common/CameraBarcodeScannerModal';
 import { BulkPriceUpdateModal } from './BulkPriceUpdateModal';
+import { ShelfPriceTagModal } from './ShelfPriceTagModal';
 import {
   Package,
   Plus,
@@ -26,14 +27,16 @@ import {
   Camera,
   CheckSquare,
   Square,
-  DollarSign
+  DollarSign,
+  Tag
 } from 'lucide-react';
 
 interface ProductsViewProps {
+  settings?: StoreSettings | null;
   onRefreshData?: () => void;
 }
 
-export const ProductsView: React.FC<ProductsViewProps> = ({ onRefreshData }) => {
+export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshData }) => {
   const { isAdmin } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -44,6 +47,10 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ onRefreshData }) => 
   // Bulk Selection & Price Modal State
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [showBulkPriceModal, setShowBulkPriceModal] = useState<boolean>(false);
+
+  // Shelf Price Tag Modal State
+  const [showShelfTagModal, setShowShelfTagModal] = useState<boolean>(false);
+  const [shelfTagProducts, setShelfTagProducts] = useState<Product[]>([]);
 
   // Modal State
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -211,6 +218,30 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ onRefreshData }) => 
 
         {isAdmin && (
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              id="print-shelf-tag-bulk-btn"
+              onClick={() => {
+                const targetProds =
+                  selectedProductIds.length > 0
+                    ? products.filter((p) => selectedProductIds.includes(p.id))
+                    : filteredProducts.length > 0
+                    ? filteredProducts
+                    : products;
+                setShelfTagProducts(targetProds);
+                setShowShelfTagModal(true);
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold rounded-2xl text-xs transition-all cursor-pointer shadow-sm"
+              title="چاپ اتیکت قیمت بزرگ برای نصب روی قفسه، سینی و ظروف فروشگاه"
+            >
+              <Tag className="w-4 h-4 text-amber-400" />
+              <span>چاپ اتیکت قیمت قفسه و سینی</span>
+              {selectedProductIds.length > 0 && (
+                <span className="px-2 py-0.5 bg-amber-500 text-slate-950 rounded-full text-[10px] font-black font-sans">
+                  {toPersianDigits(selectedProductIds.length)}
+                </span>
+              )}
+            </button>
+
             <button
               id="bulk-price-update-btn"
               onClick={() => setShowBulkPriceModal(true)}
@@ -419,6 +450,17 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ onRefreshData }) => 
                         <td className="py-3 px-4 text-center">
                           <div className="flex items-center justify-center gap-1.5">
                             <button
+                              id={`shelf-tag-product-${p.id}`}
+                              onClick={() => {
+                                setShelfTagProducts([p]);
+                                setShowShelfTagModal(true);
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-amber-500/10 transition-colors cursor-pointer"
+                              title="چاپ اتیکت قیمت قفسه و سینی این کالا (فونت خیلی بزرگ)"
+                            >
+                              <Tag className="w-4 h-4" />
+                            </button>
+                            <button
                               id={`edit-product-${p.id}`}
                               onClick={() => openEditModal(p)}
                               className="p-1.5 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
@@ -584,13 +626,15 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ onRefreshData }) => 
                       setFormData({
                         ...formData,
                         unit: u,
-                        isWeighted: u === 'KG' || u === 'G',
+                        isWeighted: u === 'KG' || u === 'G' || u === 'MESGHAL' || u === 'SOUT',
                       });
                     }}
                     className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-200 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   >
-                    <option value="KG" className="bg-[#181818] text-slate-200">کیلوگرم (فله/وزنی)</option>
+                    <option value="KG" className="bg-[#181818] text-slate-200">کیلوگرم (فله / وزنی)</option>
                     <option value="G" className="bg-[#181818] text-slate-200">گرم</option>
+                    <option value="SOUT" className="bg-[#181818] text-slate-200">صوت (زعفران و میلی‌گرم)</option>
+                    <option value="MESGHAL" className="bg-[#181818] text-slate-200">مثقال (۴.۶۰۸ گرم)</option>
                     <option value="PIECE" className="bg-[#181818] text-slate-200">عدد</option>
                     <option value="PACK" className="bg-[#181818] text-slate-200">بسته</option>
                     <option value="BOX" className="bg-[#181818] text-slate-200">جعبه</option>
@@ -647,6 +691,14 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ onRefreshData }) => 
           }}
         />
       )}
+
+      {/* Shelf Price Tag Modal */}
+      <ShelfPriceTagModal
+        isOpen={showShelfTagModal}
+        onClose={() => setShowShelfTagModal(false)}
+        products={shelfTagProducts}
+        settings={settings || null}
+      />
 
       {/* Camera Barcode Scanner for Product Form */}
       <CameraBarcodeScannerModal

@@ -128,7 +128,7 @@ const MainLayout: React.FC = () => {
             <SalesHistoryView settings={settings} onRefreshData={loadInitialAppData} />
           )}
           {activeTab === 'products' && isAdmin && (
-            <ProductsView onRefreshData={loadInitialAppData} />
+            <ProductsView settings={settings} onRefreshData={loadInitialAppData} />
           )}
           {activeTab === 'categories' && isAdmin && <CategoriesView />}
           {activeTab === 'inventory' && (

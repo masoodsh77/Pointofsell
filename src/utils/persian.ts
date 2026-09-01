@@ -27,7 +27,7 @@ export function formatCurrency(amount: number | undefined | null, suffix = 'تو
 // Format Weight & Units
 export function formatWeightOrQuantity(quantity: number, unit: ProductUnit): string {
   if (unit === 'KG') {
-    if (quantity < 1) {
+    if (quantity < 1 && quantity > 0) {
       const grams = Math.round(quantity * 1000);
       return `${formatNumber(grams)} گرم`;
     }
@@ -35,6 +35,12 @@ export function formatWeightOrQuantity(quantity: number, unit: ProductUnit): str
   }
   if (unit === 'G') {
     return `${formatNumber(quantity)} گرم`;
+  }
+  if (unit === 'MESGHAL') {
+    return `${formatNumber(quantity)} مثقال`;
+  }
+  if (unit === 'SOUT') {
+    return `${formatNumber(quantity)} صوت`;
   }
   if (unit === 'PIECE') {
     return `${formatNumber(quantity)} عدد`;
@@ -58,6 +64,10 @@ export function getUnitLabel(unit: ProductUnit): string {
       return 'کیلوگرم';
     case 'G':
       return 'گرم';
+    case 'MESGHAL':
+      return 'مثقال';
+    case 'SOUT':
+      return 'صوت';
     case 'PIECE':
       return 'عدد';
     case 'PACK':
@@ -112,6 +122,10 @@ export function getStockMovementLabel(type: StockMovementType): { label: string;
       return { label: 'موجودی اولیه', color: 'text-purple-700 bg-purple-50 border-purple-200' };
     case 'RETURN':
       return { label: 'برگشت کالا', color: 'text-cyan-700 bg-cyan-50 border-cyan-200' };
+    case 'WASTE':
+      return { label: 'ثبت خرابی و ضایعات کالا', color: 'text-rose-700 bg-rose-50 border-rose-200' };
+    case 'EXPIRED':
+      return { label: 'انقضای تاریخ مصرف کالا', color: 'text-orange-700 bg-orange-50 border-orange-200' };
     default:
       return { label: type, color: 'text-slate-700 bg-slate-50 border-slate-200' };
   }
