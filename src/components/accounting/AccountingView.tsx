@@ -6,6 +6,7 @@ import {
   formatPersianDate,
   toPersianDigits
 } from '../../utils/persian';
+import { PriceInput } from '../common/PriceInput';
 import {
   Calculator,
   DollarSign,
@@ -829,15 +830,12 @@ export const AccountingView: React.FC<AccountingViewProps> = ({ currentUser }) =
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">مبلغ هزینه (تومان) *</label>
-                  <input
-                    type="number"
-                    min="1000"
-                    step="1000"
+                  <PriceInput
                     required
-                    value={expAmount}
-                    onChange={(e) => setExpAmount(e.target.value)}
+                    value={Number(expAmount) || 0}
+                    onChange={(val) => setExpAmount(String(val))}
                     placeholder="مثال: ۵۰۰,۰۰۰"
-                    className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                    className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
 
@@ -1026,15 +1024,12 @@ export const AccountingView: React.FC<AccountingViewProps> = ({ currentUser }) =
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">مبلغ چک (تومان) *</label>
-                  <input
-                    type="number"
-                    min="1000"
-                    step="1000"
+                  <PriceInput
                     required
-                    value={chqAmount}
-                    onChange={(e) => setChqAmount(e.target.value)}
+                    value={Number(chqAmount) || 0}
+                    onChange={(val) => setChqAmount(String(val))}
                     placeholder="مبلغ به تومان"
-                    className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                    className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
 

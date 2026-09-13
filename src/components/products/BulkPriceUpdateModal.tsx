@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Product, Category } from '../../types';
 import { apiRequest } from '../../services/api';
 import { formatCurrency, toPersianDigits } from '../../utils/persian';
+import { PriceInput } from '../common/PriceInput';
 import {
   TrendingUp,
   TrendingDown,
@@ -323,21 +324,31 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
               <label className="block text-xs font-semibold text-slate-400 mb-2">
                 {mode === 'PERCENT' ? 'میزان درصد تغییر:' : 'مبلغ تغییر (تومان):'}
               </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="0"
-                  step={mode === 'PERCENT' ? '0.5' : '1000'}
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  placeholder={mode === 'PERCENT' ? 'مثلاً ۱۰' : 'مثلاً ۵۰۰۰۰'}
-                  className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:border-amber-500 outline-none"
+              {mode === 'FIXED' ? (
+                <PriceInput
+                  value={Number(value) || 0}
+                  onChange={(val) => setValue(String(val))}
+                  placeholder="مثلاً ۵۰,۰۰۰"
+                  className="bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:border-amber-500 outline-none"
                   required
                 />
-                <span className="absolute left-3 top-3 text-xs text-slate-500 font-sans">
-                  {mode === 'PERCENT' ? 'درصد ٪' : 'تومان'}
-                </span>
-              </div>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder="مثلاً ۱۰"
+                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:border-amber-500 outline-none"
+                    required
+                  />
+                  <span className="absolute left-3 top-3 text-xs text-slate-500 font-sans">
+                    درصد ٪
+                  </span>
+                </div>
+              )}
             </div>
 
             <div>

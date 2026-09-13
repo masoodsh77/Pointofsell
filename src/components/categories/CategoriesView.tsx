@@ -45,33 +45,40 @@ export const CategoriesView: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!name.trim()) return;
 
     setErrorMsg(null);
-    if (editingCategory) {
-      const res = await apiRequest(`/categories/${editingCategory.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ name, description, color }),
-      });
-      if (res.success) {
-        setSuccessMsg('دسته‌بندی با موفقیت ویرایش شد.');
-        setShowModal(false);
-        loadCategories();
+    try {
+      if (editingCategory) {
+        const res = await apiRequest(`/categories/${editingCategory.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ name, description, color }),
+        });
+        if (res.success) {
+          setSuccessMsg('دسته‌بندی با موفقیت ویرایش شد.');
+          setShowModal(false);
+          await loadCategories();
+          setTimeout(() => setSuccessMsg(null), 3000);
+        } else {
+          setErrorMsg(res.message || 'خطا در ویرایش دسته‌بندی');
+        }
       } else {
-        setErrorMsg(res.message || 'خطا در ویرایش');
+        const res = await apiRequest('/categories', {
+          method: 'POST',
+          body: JSON.stringify({ name, description, color }),
+        });
+        if (res.success) {
+          setSuccessMsg('دسته‌بندی جدید با موفقیت اضافه شد.');
+          setShowModal(false);
+          await loadCategories();
+          setTimeout(() => setSuccessMsg(null), 3000);
+        } else {
+          setErrorMsg(res.message || 'خطا در ایجاد دسته‌بندی');
+        }
       }
-    } else {
-      const res = await apiRequest('/categories', {
-        method: 'POST',
-        body: JSON.stringify({ name, description, color }),
-      });
-      if (res.success) {
-        setSuccessMsg('دسته‌بندی جدید اضافه شد.');
-        setShowModal(false);
-        loadCategories();
-      } else {
-        setErrorMsg(res.message || 'خطا در ایجاد');
-      }
+    } catch (err: any) {
+      setErrorMsg('خطای اتصال به سرور: ' + (err?.message || ''));
     }
   };
 

@@ -33,6 +33,89 @@ export function formatCurrency(amount: number | undefined | null, suffix = 'تو
   return `${formatNumber(Math.round(amount))} ${suffix}`;
 }
 
+// Convert numbers into Persian words (e.g. 1,500,000 -> یک میلیون و پانصد هزار)
+export function numberToPersianWords(num: number | string | undefined | null): string {
+  if (num === undefined || num === null || num === '') return '';
+  const n = Math.abs(Math.round(Number(toEnglishDigits(num))));
+  if (isNaN(n)) return '';
+  if (n === 0) return 'صفر';
+
+  const ones = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+  const teens = [
+    'ده',
+    'یازده',
+    'دوازده',
+    'سیزده',
+    'چهارده',
+    'پانزده',
+    'شانزده',
+    'هفده',
+    'هجده',
+    'نوزده',
+  ];
+  const tens = [
+    '',
+    '',
+    'بیست',
+    'سی',
+    'چهل',
+    'پنجاه',
+    'شصت',
+    'هفتاد',
+    'هشتاد',
+    'نود',
+  ];
+  const hundreds = [
+    '',
+    'یکصد',
+    'دویست',
+    'سیصد',
+    'چهارصد',
+    'پانصد',
+    'ششصد',
+    'هفتصد',
+    'هشتصد',
+    'نهصد',
+  ];
+  const groups = ['', 'هزار', 'میلیون', 'میلیارد', 'تریلیون'];
+
+  function threeDigitsToWords(val: number): string {
+    const h = Math.floor(val / 100);
+    const remainder = val % 100;
+    const parts: string[] = [];
+
+    if (h > 0) parts.push(hundreds[h]);
+
+    if (remainder >= 10 && remainder < 20) {
+      parts.push(teens[remainder - 10]);
+    } else {
+      const t = Math.floor(remainder / 10);
+      const o = remainder % 10;
+      if (t > 0) parts.push(tens[t]);
+      if (o > 0) parts.push(ones[o]);
+    }
+    return parts.join(' و ');
+  }
+
+  const chunks: string[] = [];
+  let temp = n;
+  let groupIdx = 0;
+
+  while (temp > 0 && groupIdx < groups.length) {
+    const chunk = temp % 1000;
+    if (chunk > 0) {
+      const chunkWords = threeDigitsToWords(chunk);
+      const groupName = groups[groupIdx];
+      chunks.unshift(groupName ? `${chunkWords} ${groupName}` : chunkWords);
+    }
+    temp = Math.floor(temp / 1000);
+    groupIdx++;
+  }
+
+  const prefix = Number(num) < 0 ? 'منفی ' : '';
+  return prefix + chunks.join(' و ');
+}
+
 // Format Weight & Units
 export function formatWeightOrQuantity(quantity: number, unit: ProductUnit): string {
   if (unit === 'KG') {

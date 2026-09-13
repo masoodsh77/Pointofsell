@@ -3,6 +3,7 @@ import { Customer, StoreSettings } from '../../types';
 import { apiRequest } from '../../services/api';
 import { formatCurrency, formatPersianDate, toPersianDigits } from '../../utils/persian';
 import { CustomerDetailModal } from './CustomerDetailModal';
+import { PriceInput } from '../common/PriceInput';
 import {
   Users,
   Plus,
@@ -514,14 +515,11 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ settings = null })
                   </div>
                   <div>
                     <label className="block text-[11px] text-slate-300 mb-1">یا مبلغ تخفیف ثابت (تومان):</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1000"
-                      value={fixedDiscountAmount}
-                      onChange={(e) => setFixedDiscountAmount(e.target.value)}
+                    <PriceInput
+                      value={Number(fixedDiscountAmount) || 0}
+                      onChange={(val) => setFixedDiscountAmount(String(val))}
                       placeholder="۰"
-                      className="w-full p-2 bg-[#181818] border border-white/10 rounded-xl text-xs text-white focus:border-purple-500 outline-none"
+                      className="p-2 bg-[#181818] border border-white/10 rounded-xl text-xs text-white focus:border-purple-500 outline-none"
                     />
                   </div>
                 </div>
@@ -533,12 +531,12 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ settings = null })
                   <label className="block text-xs font-bold text-slate-300 mb-1">
                     مانده اولیه تراز حساب (تومان):
                   </label>
-                  <input
-                    type="number"
-                    value={creditBalance}
-                    onChange={(e) => setCreditBalance(e.target.value)}
+                  <PriceInput
+                    allowNegative
+                    value={Number(creditBalance) || 0}
+                    onChange={(val) => setCreditBalance(String(val))}
                     placeholder="مثبت: بستانکار / منفی: بدهکار"
-                    className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                    className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   />
                   <span className="text-[10px] text-slate-500 mt-0.5 block">
                     عدد منفی = مشتری بدهکار است
@@ -549,14 +547,11 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ settings = null })
                   <label className="block text-xs font-bold text-slate-300 mb-1">
                     سقف اعتبار نسیه (تومان):
                   </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="100000"
-                    value={maxCreditLimit}
-                    onChange={(e) => setMaxCreditLimit(e.target.value)}
+                  <PriceInput
+                    value={Number(maxCreditLimit) || 0}
+                    onChange={(val) => setMaxCreditLimit(String(val))}
                     placeholder="مثلاً ۵,۰۰۰,۰۰۰"
-                    className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                    className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
               </div>

@@ -68,6 +68,19 @@ async function startServer() {
             '**/*.json',
             '**/server/**',
             '**/.git/**',
+            /[\/\\]data[\/\\]/,
+            /[\/\\]backups[\/\\]/,
+            /[\/\\]server[\/\\]/,
+            /\.json$/,
+            (filePath: string) => {
+              const p = filePath.replace(/\\/g, '/');
+              return (
+                p.includes('/data/') ||
+                p.includes('/backups/') ||
+                p.includes('/server/') ||
+                p.endsWith('.json')
+              );
+            },
           ],
         },
       },

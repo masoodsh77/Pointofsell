@@ -11,6 +11,7 @@ import {
 import { CameraBarcodeScannerModal } from '../common/CameraBarcodeScannerModal';
 import { BulkPriceUpdateModal } from './BulkPriceUpdateModal';
 import { ShelfPriceTagModal } from './ShelfPriceTagModal';
+import { PriceInput } from '../common/PriceInput';
 import {
   Package,
   Plus,
@@ -604,23 +605,21 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">قیمت خرید (تومان)</label>
-                  <input
-                    type="number"
-                    value={formData.purchasePrice || ''}
-                    onChange={(e) => setFormData({ ...formData, purchasePrice: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                  <PriceInput
+                    value={formData.purchasePrice}
+                    onChange={(val) => setFormData({ ...formData, purchasePrice: val })}
+                    className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                     placeholder="مبلغ خرید"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">قیمت فروش (تومان) *</label>
-                  <input
-                    type="number"
+                  <PriceInput
                     required
-                    value={formData.salePrice || ''}
-                    onChange={(e) => setFormData({ ...formData, salePrice: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-amber-400 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
+                    value={formData.salePrice}
+                    onChange={(val) => setFormData({ ...formData, salePrice: val })}
+                    className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-amber-400 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                     placeholder="مبلغ فروش به مشتری"
                   />
                 </div>

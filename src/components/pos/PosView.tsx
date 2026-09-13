@@ -13,6 +13,7 @@ import { ReceiptModal } from './ReceiptModal';
 import { CameraBarcodeScannerModal } from '../common/CameraBarcodeScannerModal';
 import { PosTerminalModal } from './PosTerminalModal';
 import { PosTransactionResult } from '../../types';
+import { PriceInput } from '../common/PriceInput';
 import {
   Barcode,
   Search,
@@ -931,26 +932,25 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
             <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1">مبلغ نقدی:</label>
-                <input
-                  type="number"
-                  value={cashPaid || ''}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
+                <PriceInput
+                  value={cashPaid || 0}
+                  onChange={(val) => {
                     setCashPaid(val);
                     setCardPaid(Math.max(0, finalAmount - val));
                   }}
-                  className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white"
-                  placeholder="تومان"
+                  showInWords={false}
+                  className="p-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white"
+                  placeholder="مبلغ نقد"
                 />
               </div>
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1">مبلغ کارتخوان:</label>
-                <input
-                  type="number"
-                  value={cardPaid || ''}
-                  onChange={(e) => setCardPaid(Number(e.target.value))}
-                  className="w-full p-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white"
-                  placeholder="تومان"
+                <PriceInput
+                  value={cardPaid || 0}
+                  onChange={(val) => setCardPaid(val)}
+                  showInWords={false}
+                  className="p-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white"
+                  placeholder="مبلغ کارت"
                 />
               </div>
             </div>
@@ -1016,15 +1016,27 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
             </div>
 
             <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                max={discountMode === 'PERCENT' ? 100 : subtotal}
-                value={discountValue || ''}
-                onChange={(e) => setDiscountValue(Math.max(0, Number(e.target.value)))}
-                placeholder={discountMode === 'PERCENT' ? 'درصد تخفیف (مثلاً ۱۰٪)' : 'مبلغ تخفیف (تومان)'}
-                className="flex-1 text-left py-1.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white placeholder-slate-600 focus:border-amber-500 outline-none"
-              />
+              {discountMode === 'FIXED' ? (
+                <div className="flex-1">
+                  <PriceInput
+                    value={discountValue || 0}
+                    onChange={(val) => setDiscountValue(val)}
+                    showInWords={false}
+                    placeholder="مبلغ تخفیف (تومان)"
+                    className="py-1.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white placeholder-slate-600 focus:border-amber-500 outline-none"
+                  />
+                </div>
+              ) : (
+                <input
+                  type="number"
+                  min="0"
+                  max={100}
+                  value={discountValue || ''}
+                  onChange={(e) => setDiscountValue(Math.max(0, Number(e.target.value)))}
+                  placeholder="درصد تخفیف (مثلاً ۱۰٪)"
+                  className="flex-1 text-left py-1.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white placeholder-slate-600 focus:border-amber-500 outline-none"
+                />
+              )}
               {discountMode === 'PERCENT' && discountValue > 0 && (
                 <span className="text-[11px] text-rose-400 font-sans font-bold whitespace-nowrap">
                   = {formatCurrency(invoiceDiscount)}

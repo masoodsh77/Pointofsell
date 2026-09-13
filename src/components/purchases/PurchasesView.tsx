@@ -8,6 +8,7 @@ import {
   getUnitLabel,
   toPersianDigits
 } from '../../utils/persian';
+import { PriceInput } from '../common/PriceInput';
 import {
   Truck,
   Plus,
@@ -554,14 +555,11 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({ onRefreshData }) =
                   </div>
 
                   <div className="sm:col-span-3">
-                    <input
-                      type="number"
-                      step="500"
-                      min="0"
-                      value={itemUnitPrice}
-                      onChange={(e) => setItemUnitPrice(e.target.value)}
+                    <PriceInput
+                      value={Number(itemUnitPrice) || 0}
+                      onChange={(val) => setItemUnitPrice(String(val))}
                       placeholder="قیمت خرید (فی)"
-                      className="w-full p-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white font-sans text-left"
+                      className="p-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white"
                     />
                   </div>
 

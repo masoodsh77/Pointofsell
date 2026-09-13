@@ -1,0 +1,22 @@
+{
+  "watch": [
+    "server.ts",
+    "server"
+  ],
+  "ignore": [
+    "data",
+    "data/*",
+    "data/**",
+    "backups",
+    "backups/*",
+    "backups/**",
+    "*.json",
+    "src",
+    "src/*",
+    "src/**",
+    "dist",
+    "dist/*",
+    "dist/**"
+  ],
+  "ext": "ts,js,json"
+}

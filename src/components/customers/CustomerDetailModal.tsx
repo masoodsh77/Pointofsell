@@ -9,6 +9,7 @@ import {
   toPersianDigits
 } from '../../utils/persian';
 import { printReceipt } from '../../utils/printReceipt';
+import { PriceInput } from '../common/PriceInput';
 import {
   FileText,
   CreditCard,
@@ -402,15 +403,12 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <label className="block text-xs font-bold text-slate-300 mb-1">
                   مبلغ تراکنش (تومان): <span className="text-rose-400">*</span>
                 </label>
-                <input
-                  type="number"
-                  min="1000"
-                  step="1000"
-                  value={txAmount}
-                  onChange={(e) => setTxAmount(e.target.value)}
-                  placeholder="مثلاً ۱۰۰,۰۰۰"
-                  className="w-full p-2.5 bg-[#181818] border border-white/10 rounded-xl text-sm font-bold text-white focus:border-amber-500 outline-none"
+                <PriceInput
                   required
+                  value={Number(txAmount) || 0}
+                  onChange={(val) => setTxAmount(String(val))}
+                  placeholder="مثلاً ۱۰۰,۰۰۰"
+                  className="p-2.5 bg-[#181818] border border-white/10 rounded-xl text-sm font-bold text-white focus:border-amber-500 outline-none"
                 />
               </div>
 

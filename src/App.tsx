@@ -87,14 +87,19 @@ const MainLayout: React.FC = () => {
           } else {
             setActiveTab(saved);
           }
-        } else {
-          setActiveTab(isAdmin ? 'dashboard' : 'pos');
+        } else if (!isAdmin) {
+          setActiveTab('pos');
         }
-      } catch (_) {
-        setActiveTab(isAdmin ? 'dashboard' : 'pos');
-      }
+      } catch (_) {}
     }
   }, [user, isAdmin, loadInitialAppData]);
+
+  // Continuously sync activeTab with localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('nuts_pos_active_tab', activeTab);
+    } catch (_) {}
+  }, [activeTab]);
 
   // Handle Role Guarding for Tab Navigation
   const handleSelectTab = (tab: TabType) => {
