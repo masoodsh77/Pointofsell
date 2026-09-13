@@ -48,6 +48,10 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [showBulkPriceModal, setShowBulkPriceModal] = useState<boolean>(false);
 
+  // Delete Confirmation State
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
   // Shelf Price Tag Modal State
   const [showShelfTagModal, setShowShelfTagModal] = useState<boolean>(false);
   const [shelfTagProducts, setShelfTagProducts] = useState<Product[]>([]);
@@ -175,16 +179,27 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`آیا از حذف محصول "${name}" اطمینان دارید؟`)) return;
+  const handleDelete = (id: string, name: string) => {
+    setProductToDelete({ id, name });
+  };
 
-    const res = await apiRequest(`/products/${id}`, { method: 'DELETE' });
-    if (res.success) {
-      setSuccessMsg('محصول با موفقیت حذف شد.');
-      loadData();
-      if (onRefreshData) onRefreshData();
-    } else {
-      setErrorMsg(res.message || 'خطا در حذف محصول');
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await apiRequest(`/products/${productToDelete.id}`, { method: 'DELETE' });
+      if (res.success) {
+        setSuccessMsg(`محصول «${productToDelete.name}» با موفقیت حذف شد.`);
+        setProductToDelete(null);
+        await loadData();
+        if (onRefreshData) onRefreshData();
+      } else {
+        setErrorMsg(res.message || 'خطا در حذف محصول');
+      }
+    } catch (err) {
+      setErrorMsg('خطا در برقراری ارتباط با سرور هنگام حذف محصول.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -711,6 +726,54 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
         title="اسکن بارکد بسته کالا"
         subtitle="بارکد چاپ شده روی بسته را مقابل دوربین بگیرید"
       />
+
+      {/* Delete Product Confirmation Modal */}
+      {productToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#141414] rounded-3xl p-6 shadow-2xl border border-white/10 w-full max-w-md text-right space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">حذف محصول از فروشگاه</h3>
+                <p className="text-xs text-slate-400 mt-0.5">این عملیات قابل بازگشت نیست</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              آیا از حذف کامل محصول <strong className="text-amber-400 font-bold">«{productToDelete.name}»</strong> اطمینان دارید؟
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/5">
+              <button
+                type="button"
+                onClick={() => setProductToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                انصراف
+              </button>
+              <button
+                type="button"
+                id="confirm-delete-product-btn"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-lg shadow-rose-600/20 cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <span>در حال حذف...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>بله، حذف شود</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

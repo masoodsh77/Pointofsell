@@ -8,6 +8,15 @@ export function toPersianDigits(input: string | number | undefined | null): stri
   return str.replace(/[0-9]/g, (w) => persianDigits[+w]);
 }
 
+// Convert Persian and Arabic digits to standard English digits
+export function toEnglishDigits(input: string | number | undefined | null): string {
+  if (input === undefined || input === null) return '';
+  const str = String(input);
+  return str
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1776))
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632));
+}
+
 // Format numbers with thousand commas (e.g. 850,000)
 export function formatNumber(num: number | string | undefined | null, addPersianDigits = true): string {
   if (num === undefined || num === null || isNaN(Number(num))) return '۰';

@@ -24,6 +24,9 @@ export const CategoriesView: React.FC = () => {
     loadCategories();
   }, []);
 
+  const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
   const openAddModal = () => {
     setEditingCategory(null);
     setName('');
@@ -72,14 +75,26 @@ export const CategoriesView: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string, catName: string) => {
-    if (!window.confirm(`آیا از حذف دسته‌بندی "${catName}" اطمینان دارید؟`)) return;
-    const res = await apiRequest(`/categories/${id}`, { method: 'DELETE' });
-    if (res.success) {
-      setSuccessMsg('دسته‌بندی حذف شد.');
-      loadCategories();
-    } else {
-      setErrorMsg(res.message || 'خطا در حذف دسته‌بندی');
+  const handleDelete = (id: string, catName: string) => {
+    setCategoryToDelete({ id, name: catName });
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await apiRequest(`/categories/${categoryToDelete.id}`, { method: 'DELETE' });
+      if (res.success) {
+        setSuccessMsg(`دسته‌بندی «${categoryToDelete.name}» حذف شد.`);
+        setCategoryToDelete(null);
+        loadCategories();
+      } else {
+        setErrorMsg(res.message || 'خطا در حذف دسته‌بندی');
+      }
+    } catch (err) {
+      setErrorMsg('خطا در برقراری ارتباط با سرور.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -228,6 +243,53 @@ export const CategoriesView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Category Modal */}
+      {categoryToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#141414] rounded-3xl p-6 shadow-2xl border border-white/10 w-full max-w-md text-right space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">حذف دسته‌بندی</h3>
+                <p className="text-xs text-slate-400 mt-0.5">این عملیات قابل بازگشت نیست</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              آیا از حذف دسته‌بندی <strong className="text-amber-400 font-bold">«{categoryToDelete.name}»</strong> اطمینان دارید؟
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/5">
+              <button
+                type="button"
+                onClick={() => setCategoryToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                انصراف
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteCategory}
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-lg shadow-rose-600/20 cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <span>در حال حذف...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>بله، حذف شود</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -324,6 +324,8 @@ html[data-theme-color="slate"] .focus\:ring-amber-500:focus { --tw-ring-color: #
   }
   #printable-barcodes, #printable-barcodes * {
     visibility: visible;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   #printable-barcodes {
     position: absolute;
@@ -334,6 +336,15 @@ html[data-theme-color="slate"] .focus\:ring-amber-500:focus { --tw-ring-color: #
     padding: 10px;
     background: white;
     color: black;
+  }
+  #printable-barcodes > div {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  #printable-barcodes svg, #printable-price-labels svg {
+    shape-rendering: crispEdges !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   #printable-price-labels, #printable-price-labels * {
     visibility: visible;

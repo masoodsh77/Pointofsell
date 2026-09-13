@@ -6,7 +6,8 @@ import {
   formatNumber,
   formatWeightOrQuantity,
   getUnitLabel,
-  toPersianDigits
+  toPersianDigits,
+  toEnglishDigits
 } from '../../utils/persian';
 import { ReceiptModal } from './ReceiptModal';
 import { CameraBarcodeScannerModal } from '../common/CameraBarcodeScannerModal';
@@ -122,13 +123,20 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
     return matchesCat && matchesSearch;
   });
 
-  // Handle Barcode Scanned via Camera or Input
+  // Handle Barcode Scanned via Camera, Gun Scanner, or Input
   const handleBarcodeScanned = (scannedCode: string) => {
-    const code = scannedCode.trim();
-    if (!code) return;
+    const raw = scannedCode.trim();
+    if (!raw) return;
+
+    const normalized = toEnglishDigits(raw);
 
     const matched = products.find(
-      (p) => p.barcode === code || p.sku.toLowerCase() === code.toLowerCase()
+      (p) =>
+        p.barcode === raw ||
+        p.barcode === normalized ||
+        toEnglishDigits(p.barcode) === normalized ||
+        p.sku.toLowerCase() === raw.toLowerCase() ||
+        p.sku.toLowerCase() === normalized.toLowerCase()
     );
 
     if (matched) {
@@ -141,10 +149,52 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
       }
       setBarcodeInput('');
     } else {
-      setErrorMsg(`کالایی با بارکد ${code} در انبار یافت نشد.`);
+      setErrorMsg(`کالایی با بارکد «${raw}» در انبار یافت نشد.`);
       setTimeout(() => setErrorMsg(null), 4000);
     }
   };
+
+  // Global Hardware Barcode Scanner listener (captures rapid scans without needing input focus)
+  useEffect(() => {
+    let scanBuffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is inside another form input (e.g., customer name, custom grams, search box)
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) &&
+        target.id !== 'pos-barcode-scanner-input'
+      ) {
+        return;
+      }
+
+      const currentTime = Date.now();
+      const timeDiff = currentTime - lastKeyTime;
+      lastKeyTime = currentTime;
+
+      if (e.key === 'Enter') {
+        if (scanBuffer.length >= 3) {
+          e.preventDefault();
+          handleBarcodeScanned(scanBuffer);
+          scanBuffer = '';
+        }
+      } else if (e.key.length === 1) {
+        // Scanners send keystrokes extremely rapidly (< 50ms)
+        if (timeDiff > 120) {
+          scanBuffer = e.key;
+        } else {
+          scanBuffer += e.key;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [products]);
 
   // Handle Barcode Submit from Input Field
   const handleBarcodeSubmit = (e: React.FormEvent) => {

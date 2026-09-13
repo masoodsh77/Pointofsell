@@ -24,6 +24,9 @@ export const SuppliersView: React.FC = () => {
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [selectedSupplierForPurchases, setSelectedSupplierForPurchases] = useState<Supplier | null>(null);
 
+  const [supplierToDelete, setSupplierToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
   const [name, setName] = useState<string>('');
   const [contactPerson, setContactPerson] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
@@ -93,15 +96,27 @@ export const SuppliersView: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string, sName: string) => {
-    if (!window.confirm(`آیا از حذف تامین‌کننده "${sName}" اطمینان دارید؟`)) return;
-    const res = await apiRequest(`/suppliers/${id}`, { method: 'DELETE' });
-    if (res.success) {
-      setSuccessMsg('تامین‌کننده حذف شد.');
-      loadSuppliers();
-      setTimeout(() => setSuccessMsg(null), 3000);
-    } else {
-      setErrorMsg(res.message || 'خطا در حذف');
+  const handleDelete = (id: string, sName: string) => {
+    setSupplierToDelete({ id, name: sName });
+  };
+
+  const confirmDeleteSupplier = async () => {
+    if (!supplierToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await apiRequest(`/suppliers/${supplierToDelete.id}`, { method: 'DELETE' });
+      if (res.success) {
+        setSuccessMsg(`تامین‌کننده «${supplierToDelete.name}» با موفقیت حذف شد.`);
+        setSupplierToDelete(null);
+        loadSuppliers();
+        setTimeout(() => setSuccessMsg(null), 3000);
+      } else {
+        setErrorMsg(res.message || 'خطا در حذف تامین‌کننده');
+      }
+    } catch (err) {
+      setErrorMsg('خطا در ارتباط با سرور.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -317,6 +332,46 @@ export const SuppliersView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {supplierToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#181818] border border-rose-500/30 rounded-3xl w-full max-w-md p-6 space-y-5 shadow-2xl text-right">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">تأیید حذف تامین‌کننده</h3>
+                <p className="text-xs text-slate-400 mt-0.5">این عملیات غیرقابل بازگشت است</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-300 leading-relaxed">
+              آیا از حذف تامین‌کننده <strong className="text-rose-400">«{supplierToDelete.name}»</strong> مطمئن هستید؟
+            </p>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setSupplierToDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs font-bold border border-white/5 cursor-pointer disabled:opacity-50"
+              >
+                انصراف
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteSupplier}
+                disabled={isDeleting}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-600/20 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {isDeleting ? 'در حال حذف...' : 'بله، حذف شود'}
+              </button>
+            </div>
           </div>
         </div>
       )}

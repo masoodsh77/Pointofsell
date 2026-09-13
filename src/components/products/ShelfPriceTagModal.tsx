@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product, StoreSettings } from '../../types';
 import { formatNumber, getUnitLabel, toPersianDigits } from '../../utils/persian';
+import { BarcodeSvg } from '../common/BarcodeSvg';
 import {
   Printer,
   X,
@@ -8,7 +9,8 @@ import {
   Sparkles,
   Maximize2,
   Type,
-  LayoutGrid
+  Eraser,
+  RotateCcw
 } from 'lucide-react';
 
 export type ShelfTagSize = 'JUMBO_WINDOW' | 'LARGE_STAND' | 'MEDIUM_TRAY' | 'COMPACT_RAIL';
@@ -21,6 +23,105 @@ interface ShelfPriceTagModalProps {
   settings: StoreSettings | null;
 }
 
+// Dynamic mathematical font size scaling to prevent any overflow outside the card frame
+export function getSafePriceFontClass(
+  formattedPrice: string,
+  tagSize: ShelfTagSize,
+  fontScale: FontSizeScale
+): string {
+  const len = formattedPrice.length; // e.g. "۱,۱۸۰,۰۰۰" is 9 chars
+
+  if (tagSize === 'JUMBO_WINDOW') {
+    // 1 column across the whole page (wide: ~600px)
+    if (len <= 6) {
+      return fontScale === 'GIGANTIC'
+        ? 'text-6xl sm:text-7xl md:text-8xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-5xl sm:text-6xl md:text-7xl'
+        : 'text-4xl sm:text-5xl md:text-6xl';
+    } else if (len <= 9) {
+      return fontScale === 'GIGANTIC'
+        ? 'text-5xl sm:text-6xl md:text-7xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-4xl sm:text-5xl md:text-6xl'
+        : 'text-3xl sm:text-4xl md:text-5xl';
+    } else {
+      return fontScale === 'GIGANTIC'
+        ? 'text-4xl sm:text-5xl md:text-6xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-3xl sm:text-4xl md:text-5xl'
+        : 'text-2xl sm:text-3xl md:text-4xl';
+    }
+  }
+
+  if (tagSize === 'LARGE_STAND') {
+    // 2 columns (~300px per card)
+    if (len <= 5) {
+      return fontScale === 'GIGANTIC'
+        ? 'text-4xl sm:text-5xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-3xl sm:text-4xl'
+        : 'text-2xl sm:text-3xl';
+    } else if (len <= 8) {
+      return fontScale === 'GIGANTIC'
+        ? 'text-3xl sm:text-4xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-2xl sm:text-3xl'
+        : 'text-xl sm:text-2xl';
+    } else {
+      return fontScale === 'GIGANTIC'
+        ? 'text-2xl sm:text-3xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-xl sm:text-2xl'
+        : 'text-lg sm:text-xl';
+    }
+  }
+
+  if (tagSize === 'MEDIUM_TRAY') {
+    // 2-3 columns (~220px per card)
+    if (len <= 5) {
+      return fontScale === 'GIGANTIC'
+        ? 'text-3xl sm:text-4xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-2xl sm:text-3xl'
+        : 'text-xl sm:text-2xl';
+    } else if (len <= 8) {
+      return fontScale === 'GIGANTIC'
+        ? 'text-2xl sm:text-3xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-xl sm:text-2xl'
+        : 'text-lg sm:text-xl';
+    } else {
+      return fontScale === 'GIGANTIC'
+        ? 'text-xl sm:text-2xl'
+        : fontScale === 'EXTRA_LARGE'
+        ? 'text-lg sm:text-xl'
+        : 'text-base sm:text-lg';
+    }
+  }
+
+  // COMPACT_RAIL (narrow ~180px per card)
+  if (len <= 5) {
+    return fontScale === 'GIGANTIC'
+      ? 'text-2xl sm:text-3xl'
+      : fontScale === 'EXTRA_LARGE'
+      ? 'text-xl sm:text-2xl'
+      : 'text-lg sm:text-xl';
+  } else if (len <= 8) {
+    return fontScale === 'GIGANTIC'
+      ? 'text-xl sm:text-2xl'
+      : fontScale === 'EXTRA_LARGE'
+      ? 'text-lg sm:text-xl'
+      : 'text-base sm:text-lg';
+  } else {
+    return fontScale === 'GIGANTIC'
+      ? 'text-lg sm:text-xl'
+      : fontScale === 'EXTRA_LARGE'
+      ? 'text-base sm:text-lg'
+      : 'text-sm sm:text-base';
+  }
+}
+
 export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
   isOpen,
   onClose,
@@ -30,11 +131,24 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
   const [tagSize, setTagSize] = useState<ShelfTagSize>('LARGE_STAND');
   const [fontScale, setFontScale] = useState<FontSizeScale>('GIGANTIC');
   const [copiesPerProduct, setCopiesPerProduct] = useState<number>(1);
-  const [showStoreName, setShowStoreName] = useState<boolean>(true);
-  const [showUnitText, setShowUnitText] = useState<boolean>(true);
-  const [showCode, setShowCode] = useState<boolean>(true);
-  const [customSubtitle, setCustomSubtitle] = useState<string>('درجه یک و اعلا');
+
+  // Content control states - Minimalist default per user request: only price with large font, clearable name
+  const [showProductName, setShowProductName] = useState<boolean>(true);
+  const [customProductName, setCustomProductName] = useState<string>('');
+  const [showStoreName, setShowStoreName] = useState<boolean>(false);
+  const [showUnitText, setShowUnitText] = useState<boolean>(false);
+  const [showCode, setShowCode] = useState<boolean>(false);
   const [includeSubtitle, setIncludeSubtitle] = useState<boolean>(false);
+  const [customSubtitle, setCustomSubtitle] = useState<string>('درجه یک و اعلا');
+
+  // Sync custom product name when single product is selected
+  useEffect(() => {
+    if (products.length === 1) {
+      setCustomProductName(products[0].name);
+    } else {
+      setCustomProductName('');
+    }
+  }, [products]);
 
   if (!isOpen || products.length === 0) return null;
 
@@ -61,13 +175,13 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <span>چاپ اتیکت قیمت قفسه و سینی کالا (فونت بسیار بزرگ)</span>
+                <span>چاپ اتیکت و لیبل قیمت (فونت درشت بدون خروج از کادر)</span>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-normal">
                   {toPersianDigits(products.length)} کالا
                 </span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                طراحی شده با فونت فوق‌العاده درشت جهت خوانایی آسان قیمت و نام محصول از فاصله چند متری
+                طراحی خلوت و اختصاصی با فونت بزرگ، بدون بیرون‌زدگی قیمت از کادر و با نام قابل حذف
               </p>
             </div>
           </div>
@@ -150,7 +264,7 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                 {[
                   { id: 'LARGE' as FontSizeScale, label: 'درشت' },
                   { id: 'EXTRA_LARGE' as FontSizeScale, label: 'خیلی درشت' },
-                  { id: 'GIGANTIC' as FontSizeScale, label: 'حداکثر (غول‌پیکر)' },
+                  { id: 'GIGANTIC' as FontSizeScale, label: 'حداکثر (بزرگ)' },
                 ].map((f) => (
                   <button
                     key={f.id}
@@ -166,6 +280,79 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Product Name Customization & Clear Option */}
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={showProductName}
+                    onChange={(e) => setShowProductName(e.target.checked)}
+                    className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
+                  />
+                  <span>نمایش نام محصول روی اتیکت</span>
+                </label>
+
+                {showProductName && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomProductName('');
+                      setShowProductName(false);
+                    }}
+                    className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20 transition-colors"
+                    title="پاک کردن کامل نام محصول تا فقط قیمت چاپ شود"
+                  >
+                    <Eraser className="w-3.5 h-3.5" />
+                    <span>پاک کردن نام (فقط قیمت)</span>
+                  </button>
+                )}
+              </div>
+
+              {showProductName && products.length === 1 && (
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>عنوان روی اتیکت (قابل ویرایش یا پاک کردن):</span>
+                    {customProductName !== products[0].name && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomProductName(products[0].name)}
+                        className="text-amber-400 hover:underline flex items-center gap-0.5"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>بازگردانی نام اصلی</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={customProductName}
+                      onChange={(e) => setCustomProductName(e.target.value)}
+                      placeholder="نام محصول (یا خالی بگذارید تا فقط قیمت چاپ شود)"
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-amber-500 pr-3 pl-8"
+                    />
+                    {customProductName && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomProductName('')}
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
+                        title="پاک کردن متن"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {showProductName && products.length > 1 && (
+                <p className="text-[11px] text-slate-400">
+                  {toPersianDigits(products.length)} کالا انتخاب شده‌اند. با برداشتن تیک بالا، روی تمام اتیکت‌ها فقط قیمت بزرگ چاپ می‌شود.
+                </p>
+              )}
             </div>
 
             {/* Copies per item */}
@@ -191,10 +378,10 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
               </div>
             </div>
 
-            {/* Options Checkboxes */}
+            {/* Other Options (Default Off per request) */}
             <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
-              <div className="text-xs font-bold text-slate-300 mb-1">تنظیمات ظاهر اتیکت:</div>
-              
+              <div className="text-xs font-bold text-slate-300 mb-1">سایر گزینه‌های اختیاری:</div>
+
               <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -202,7 +389,7 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                   onChange={(e) => setShowStoreName(e.target.checked)}
                   className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
                 />
-                <span>نمایش نام فروشگاه ({settings?.storeName || 'خشکبار'})</span>
+                <span>نمایش نام فروشگاه ({settings?.storeName || 'آجیل و خشکبار برادران جهانتیغ'})</span>
               </label>
 
               <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
@@ -212,7 +399,7 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                   onChange={(e) => setShowUnitText(e.target.checked)}
                   className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
                 />
-                <span>نمایش عبارت واحد (مثلاً: هر کیلوگرم / هر مثقال / هر صوت)</span>
+                <span>نمایش عبارت واحد (مثلاً هر کیلوگرم)</span>
               </label>
 
               <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
@@ -222,7 +409,7 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                   onChange={(e) => setShowCode(e.target.checked)}
                   className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
                 />
-                <span>نمایش کد کالا (SKU / بارکد) در گوشه اتیکت</span>
+                <span>نمایش کد کالا (بارکد)</span>
               </label>
 
               <div className="pt-2 border-t border-white/5 space-y-1.5">
@@ -233,14 +420,14 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                     onChange={(e) => setIncludeSubtitle(e.target.checked)}
                     className="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer"
                   />
-                  <span>افزودن برچسب کیفیت یا توضیحات:</span>
+                  <span>افزودن برچسب کیفیت (مثلاً درجه یک اعلا):</span>
                 </label>
                 {includeSubtitle && (
                   <input
                     type="text"
                     value={customSubtitle}
                     onChange={(e) => setCustomSubtitle(e.target.value)}
-                    placeholder="مثلاً درجه یک اعلا، محصول امسال، تازه و خوش‌طعم"
+                    placeholder="مثلاً درجه یک اعلا، دست‌چین امسال"
                     className="w-full px-3 py-1.5 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   />
                 )}
@@ -254,9 +441,9 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
               <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
                 <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span>پیش‌نمایش زنده صفحه چاپ (آماده برای برش با قیچی):</span>
+                  <span>پیش‌نمایش زنده اتیکت‌ها (اندازه دقیق بدون خروج قیمت از کادر):</span>
                 </span>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-slate-400">
                   {toPersianDigits(tagList.length)} اتیکت در صفحه
                 </span>
               </div>
@@ -275,48 +462,36 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                 }`}
               >
                 {tagList.map((product, idx) => {
-                  // Determine price font size class based on tagSize + fontScale
-                  let priceFontClass = 'text-3xl sm:text-4xl';
-                  let nameFontClass = 'text-base sm:text-lg';
-                  let cardMinHeight = 'min-h-[170px] p-3.5';
+                  // Determine final name to display
+                  const isSingle = products.length === 1;
+                  const finalName = showProductName
+                    ? isSingle && customProductName !== undefined
+                      ? customProductName.trim()
+                      : product.name
+                    : '';
+
+                  const formattedPrice = formatNumber(product.salePrice);
+                  const priceFontClass = getSafePriceFontClass(formattedPrice, tagSize, fontScale);
+
+                  // Card sizing
+                  let cardMinHeight = 'min-h-[170px] p-4';
+                  let nameFontClass = 'text-base sm:text-lg font-black';
 
                   if (tagSize === 'JUMBO_WINDOW') {
-                    cardMinHeight = 'min-h-[280px] p-6';
-                    nameFontClass = 'text-2xl sm:text-3xl md:text-4xl font-black';
-                    priceFontClass =
-                      fontScale === 'GIGANTIC'
-                        ? 'text-6xl sm:text-7xl md:text-8xl'
-                        : fontScale === 'EXTRA_LARGE'
-                        ? 'text-5xl sm:text-6xl md:text-7xl'
-                        : 'text-4xl sm:text-5xl md:text-6xl';
-                  } else if (tagSize === 'LARGE_STAND') {
-                    cardMinHeight = 'min-h-[220px] p-4 sm:p-5';
+                    cardMinHeight = 'min-h-[260px] p-6';
                     nameFontClass = 'text-xl sm:text-2xl md:text-3xl font-black';
-                    priceFontClass =
-                      fontScale === 'GIGANTIC'
-                        ? 'text-5xl sm:text-6xl'
-                        : fontScale === 'EXTRA_LARGE'
-                        ? 'text-4xl sm:text-5xl'
-                        : 'text-3xl sm:text-4xl';
-                  } else if (tagSize === 'MEDIUM_TRAY') {
-                    cardMinHeight = 'min-h-[180px] p-3.5';
+                  } else if (tagSize === 'LARGE_STAND') {
+                    cardMinHeight = 'min-h-[200px] p-4 sm:p-5';
                     nameFontClass = 'text-lg sm:text-xl font-black';
-                    priceFontClass =
-                      fontScale === 'GIGANTIC'
-                        ? 'text-4xl sm:text-5xl'
-                        : fontScale === 'EXTRA_LARGE'
-                        ? 'text-3xl sm:text-4xl'
-                        : 'text-2xl sm:text-3xl';
+                  } else if (tagSize === 'MEDIUM_TRAY') {
+                    cardMinHeight = 'min-h-[170px] p-3.5';
+                    nameFontClass = 'text-base sm:text-lg font-black';
                   } else if (tagSize === 'COMPACT_RAIL') {
                     cardMinHeight = 'min-h-[130px] p-3';
-                    nameFontClass = 'text-base sm:text-lg font-black';
-                    priceFontClass =
-                      fontScale === 'GIGANTIC'
-                        ? 'text-3xl sm:text-4xl'
-                        : fontScale === 'EXTRA_LARGE'
-                        ? 'text-2xl sm:text-3xl'
-                        : 'text-xl sm:text-2xl';
+                    nameFontClass = 'text-sm sm:text-base font-black';
                   }
+
+                  const hasTopBar = showStoreName || showCode;
 
                   return (
                     <div
@@ -324,63 +499,73 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                       className={`bg-white border-2 border-dashed border-slate-400 rounded-2xl flex flex-col justify-between text-center relative overflow-hidden transition-all print:border-solid print:border-slate-800 ${cardMinHeight}`}
                       style={{ direction: 'rtl' }}
                     >
-                      {/* Top Bar: Store Name & Code */}
-                      <div className="flex items-center justify-between border-b-2 border-slate-900 pb-1.5 mb-2 w-full">
-                        {showStoreName ? (
-                          <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight truncate">
-                            {settings?.storeName || 'فروشگاه زعفران و خشکبار'}
-                          </span>
-                        ) : (
-                          <span />
-                        )}
+                      {/* Optional Top Bar (Store Name & Code) */}
+                      {hasTopBar && (
+                        <div className="flex items-center justify-between border-b-2 border-slate-900 pb-1.5 mb-2 w-full">
+                          {showStoreName ? (
+                            <span className="text-xs sm:text-sm font-black text-slate-800 tracking-tight truncate">
+                              {settings?.storeName || 'آجیل و خشکبار برادران جهانتیغ'}
+                            </span>
+                          ) : (
+                            <span />
+                          )}
 
-                        {showCode && (
-                          <span className="text-[11px] font-mono font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
-                            {product.barcode || product.sku}
-                          </span>
-                        )}
-                      </div>
+                          {showCode && (
+                            <div className="flex flex-col items-center justify-center overflow-hidden bg-white p-0.5 rounded-sm">
+                              <BarcodeSvg
+                                value={product.barcode || product.sku}
+                                format="CODE128"
+                                width={1.2}
+                                height={28}
+                                displayValue={true}
+                                fontSize={9}
+                                margin={2}
+                                className="max-w-[150px]"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
 
-                      {/* Product Name (EXTRA BOLD & PROMINENT) */}
-                      <div className="my-auto py-1">
+                      {/* Product Name (Optional / Clearable) */}
+                      {finalName ? (
+                        <div className="pt-1 pb-1 w-full max-w-full overflow-hidden">
+                          <div
+                            className={`text-slate-950 leading-tight tracking-tight truncate px-1 w-full ${nameFontClass}`}
+                          >
+                            {finalName}
+                          </div>
+
+                          {includeSubtitle && customSubtitle.trim() && (
+                            <div className="text-xs font-bold text-amber-800 mt-1">
+                              ★ {customSubtitle} ★
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+
+                      {/* HERO Price Block - Centered, guaranteed no overflow */}
+                      <div className="my-auto py-2 w-full max-w-full overflow-hidden flex flex-col items-center justify-center">
                         <div
-                          className={`font-black text-slate-950 leading-tight tracking-tight ${nameFontClass}`}
+                          className={`font-black text-slate-950 tracking-tight font-sans w-full max-w-full overflow-hidden text-center truncate ${priceFontClass}`}
+                          style={{
+                            fontVariantNumeric: 'tabular-nums',
+                            wordBreak: 'keep-all',
+                            whiteSpace: 'nowrap',
+                            lineHeight: 1.15,
+                          }}
                         >
-                          {product.name}
+                          {formattedPrice}
                         </div>
 
-                        {includeSubtitle && customSubtitle.trim() && (
-                          <div className="text-xs sm:text-sm font-black text-amber-700 mt-1">
-                            ★ {customSubtitle} ★
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Price Block (MAXIMUM SIZE, BOLD HIGH-CONTRAST) */}
-                      <div className="mt-2.5 pt-2 border-t-2 border-slate-900 bg-slate-50/80 rounded-xl p-2.5 sm:p-3 flex flex-col items-center justify-center">
-                        <div className="flex items-baseline justify-center gap-1.5 sm:gap-2 flex-wrap">
-                          <span
-                            className={`font-black text-slate-950 tracking-tighter font-sans ${priceFontClass}`}
-                            style={{ fontVariantNumeric: 'tabular-nums' }}
-                          >
-                            {formatNumber(product.salePrice)}
-                          </span>
-                          <span
-                            className={`font-black text-slate-900 ${
-                              tagSize === 'JUMBO_WINDOW'
-                                ? 'text-lg sm:text-2xl'
-                                : tagSize === 'LARGE_STAND'
-                                ? 'text-sm sm:text-lg'
-                                : 'text-xs sm:text-sm'
-                            }`}
-                          >
-                            تومان
-                          </span>
+                        {/* "تومان" placed cleanly beneath the number to preserve 100% horizontal width for digits */}
+                        <div className="text-xs sm:text-sm font-black text-slate-700 mt-1 tracking-wider">
+                          تومان
                         </div>
 
                         {showUnitText && (
                           <div
-                            className={`font-black text-slate-800 mt-1 px-3 py-0.5 bg-slate-200/80 rounded-full ${
+                            className={`font-black text-slate-800 mt-1.5 px-3 py-0.5 bg-slate-100 border border-slate-200 rounded-full ${
                               tagSize === 'JUMBO_WINDOW'
                                 ? 'text-sm sm:text-base'
                                 : 'text-xs sm:text-sm'
@@ -392,8 +577,8 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                       </div>
 
                       {/* Scissors Cut Indicator Notice */}
-                      <div className="text-[9px] text-slate-400 absolute bottom-0.5 left-1 font-mono print:hidden">
-                        ✂ خط برش
+                      <div className="text-[9px] text-slate-400 absolute bottom-0.5 left-1 font-mono print:hidden select-none">
+                        ✂ برش
                       </div>
                     </div>
                   );
