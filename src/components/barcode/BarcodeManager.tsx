@@ -18,6 +18,7 @@ import {
   Type,
   Eraser,
   RotateCcw,
+  AlertCircle,
   X
 } from 'lucide-react';
 
@@ -49,6 +50,7 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const loadProducts = async () => {
     const res = await apiRequest<Product[]>('/products');
@@ -75,22 +77,38 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
     }
   }, [selectedProductId]);
 
-  const handleGenerateNewBarcode = async () => {
+  const handleGenerateNewBarcode = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!selectedProduct) return;
     setIsGenerating(true);
-    const res = await apiRequest<{ barcode: string }>('/products/generate-barcode');
-    if (res.success && res.data) {
-      const updateRes = await apiRequest<Product>(`/products/${selectedProduct.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ barcode: res.data.barcode }),
-      });
-      if (updateRes.success) {
-        setSuccessMsg(`بارکد اختصاصی جدید (${res.data.barcode}) با موفقیت برای محصول ثبت شد.`);
-        loadProducts();
-        setTimeout(() => setSuccessMsg(null), 4000);
+    try {
+      const res = await apiRequest<{ barcode: string }>('/products/generate-barcode');
+      if (res.success && res.data?.barcode) {
+        const updateRes = await apiRequest<Product>(`/products/${selectedProduct.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ barcode: res.data.barcode }),
+        });
+        if (updateRes.success) {
+          setSuccessMsg(`بارکد اختصاصی جدید (${res.data.barcode}) با موفقیت برای محصول ثبت شد.`);
+          await loadProducts();
+          setTimeout(() => setSuccessMsg(null), 4000);
+        } else {
+          setErrorMsg(updateRes.message || 'خطا در ثبت بارکد جدید');
+          setTimeout(() => setErrorMsg(null), 4000);
+        }
+      } else {
+        setErrorMsg('خطا در تولید بارکد از سرور');
+        setTimeout(() => setErrorMsg(null), 4000);
       }
+    } catch (err: any) {
+      setErrorMsg('خطای اتصال به سرور: ' + (err?.message || ''));
+      setTimeout(() => setErrorMsg(null), 4000);
+    } finally {
+      setIsGenerating(false);
     }
-    setIsGenerating(false);
   };
 
   const handlePrint = () => {
@@ -188,6 +206,14 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
         <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-xs flex items-center gap-2">
           <Check className="w-4 h-4 shrink-0" />
           <span>{successMsg}</span>
+        </div>
+      )}
+
+      {/* Error Notification */}
+      {errorMsg && (
+        <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errorMsg}</span>
         </div>
       )}
 

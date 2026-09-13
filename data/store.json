@@ -20,7 +20,26 @@
     }
   ],
   "categories": [],
-  "products": [],
+  "products": [
+    {
+      "id": "prod-1789313062416",
+      "name": "تست",
+      "sku": "SKU-043923",
+      "barcode": "6262935500152",
+      "categoryId": "cat-1",
+      "purchasePrice": 1000,
+      "salePrice": 28000,
+      "stock": 10,
+      "minimumStock": 5,
+      "unit": "PIECE",
+      "isWeighted": false,
+      "description": "",
+      "image": "",
+      "isActive": true,
+      "createdAt": "2026-09-13T15:24:22.416Z",
+      "updatedAt": "2026-09-13T15:28:51.383Z"
+    }
+  ],
   "customers": [
     {
       "id": "cust-1",
@@ -28,15 +47,124 @@
       "phone": "۰۹۰۰۰۰۰۰۰۰۰",
       "address": "خرید حضوری در فروشگاه",
       "description": "مشتریان گذری",
-      "totalPurchases": 0,
+      "totalPurchases": 1,
       "totalSpent": 0,
       "createdAt": "2026-08-31T19:14:10.608Z"
     }
   ],
   "suppliers": [],
-  "sales": [],
+  "sales": [
+    {
+      "id": "sale-1789313232651",
+      "invoiceNumber": "INV-1403-1003",
+      "sellerId": "u-admin-1",
+      "sellerName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "customerId": "cust-1",
+      "customerName": "مشتری عمومی (حضوری)",
+      "customerPhone": "۰۹۰۰۰۰۰۰۰۰۰",
+      "items": [
+        {
+          "id": "si-1789313232651-te7n",
+          "saleId": "sale-1789313232651",
+          "productId": "prod-1789313062416",
+          "productName": "تست",
+          "quantity": 7,
+          "unit": "PIECE",
+          "unitSalePrice": 50000,
+          "unitPurchasePrice": 1000,
+          "discount": 0,
+          "total": 350000,
+          "profit": 343000
+        }
+      ],
+      "subtotal": 350000,
+      "discount": 0,
+      "tax": 0,
+      "finalAmount": 350000,
+      "paymentMethod": "CARD",
+      "cashPaid": 0,
+      "cardPaid": 350000,
+      "cardTraceNumber": "108642",
+      "cardRRN": "024142837655",
+      "cardMaskedPan": "۶۰۳۷-****-****-۴۸۲۹",
+      "cardTerminalId": "8823491",
+      "status": "CANCELLED",
+      "createdAt": "2026-09-13T15:27:12.651Z",
+      "totalProfit": 343000,
+      "cancelReason": "مرجوعی کالا توسط مشتری و عودت وجه",
+      "cancelledAt": "2026-09-13T15:28:51.383Z"
+    }
+  ],
   "purchases": [],
-  "stockMovements": [],
+  "stockMovements": [
+    {
+      "id": "sm-1789314887820",
+      "productId": "prod-1789314887820",
+      "productName": "تست ذخیره محصول بدون ریست",
+      "type": "INITIAL_STOCK",
+      "quantity": 5,
+      "previousStock": 0,
+      "newStock": 5,
+      "userId": "u-admin-1",
+      "userName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "notes": "ثبت محصول جدید با موجودی اولیه",
+      "createdAt": "2026-09-13T15:54:47.820Z"
+    },
+    {
+      "id": "sm-1789313331383-oumo",
+      "productId": "prod-1789313062416",
+      "productName": "تست",
+      "type": "SALE_CANCEL",
+      "quantity": 7,
+      "previousStock": 3,
+      "newStock": 10,
+      "referenceId": "INV-1403-1003",
+      "userId": "u-admin-1",
+      "userName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "notes": "لغو فاکتور INV-1403-1003 - علت: مرجوعی کالا توسط مشتری و عودت وجه",
+      "createdAt": "2026-09-13T15:28:51.383Z"
+    },
+    {
+      "id": "sm-1789313232651-8bc0",
+      "productId": "prod-1789313062416",
+      "productName": "تست",
+      "type": "SALE",
+      "quantity": 7,
+      "previousStock": 10,
+      "newStock": 3,
+      "referenceId": "INV-1403-1003",
+      "userId": "u-admin-1",
+      "userName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "notes": "فروش بر اساس فاکتور INV-1403-1003",
+      "createdAt": "2026-09-13T15:27:12.651Z"
+    },
+    {
+      "id": "sm-1789313062416",
+      "productId": "prod-1789313062416",
+      "productName": "تست",
+      "type": "INITIAL_STOCK",
+      "quantity": 10,
+      "previousStock": 0,
+      "newStock": 10,
+      "userId": "u-admin-1",
+      "userName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "notes": "ثبت محصول جدید با موجودی اولیه",
+      "createdAt": "2026-09-13T15:24:22.416Z"
+    },
+    {
+      "id": "sm-1789312623911",
+      "productId": "prod-1789312443696",
+      "productName": "65464654",
+      "type": "ADJUSTMENT",
+      "quantity": 50,
+      "previousStock": 0,
+      "newStock": 50,
+      "userId": "u-admin-1",
+      "userName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "notes": "انبارگردانی و تطبیق موجودی فیزیکی",
+      "createdAt": "2026-09-13T15:17:03.911Z"
+    }
+  ],
   "expenses": [],
   "cheques": [],
   "customerTransactions": [],
@@ -68,6 +196,22 @@
   },
   "backups": [
     {
+      "id": "bk-1789312114391",
+      "filename": "backup-2026-09-13T15-08-34-391Z.json",
+      "fileSizeBytes": 2654,
+      "isManual": false,
+      "createdAt": "2026-09-13T15:08:34.391Z",
+      "recordCounts": {
+        "products": 0,
+        "sales": 0,
+        "purchases": 0,
+        "stockMovements": 0,
+        "customers": 1,
+        "suppliers": 0,
+        "users": 2
+      }
+    },
+    {
       "id": "bk-1788203650610",
       "filename": "backup-2026-08-31T19-14-10-609Z.json",
       "fileSizeBytes": 2253,
@@ -85,8 +229,8 @@
     }
   ],
   "counters": {
-    "invoice": 1003,
+    "invoice": 1004,
     "purchase": 5002,
-    "barcode": 200000000015
+    "barcode": 200000000018
   }
 }

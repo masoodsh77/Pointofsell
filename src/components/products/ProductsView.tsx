@@ -132,15 +132,28 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
     setShowModal(true);
   };
 
-  const handleGenerateBarcode = async () => {
-    const res = await apiRequest<{ barcode: string }>('/products/generate-barcode');
-    if (res.success && res.data) {
-      setFormData((prev) => ({ ...prev, barcode: res.data!.barcode }));
+  const handleGenerateBarcode = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      const res = await apiRequest<{ barcode: string }>('/products/generate-barcode');
+      if (res.success && res.data?.barcode) {
+        setFormData((prev) => ({ ...prev, barcode: res.data!.barcode }));
+      } else {
+        const fallback = '200' + Math.floor(100000000 + Math.random() * 900000000);
+        setFormData((prev) => ({ ...prev, barcode: fallback }));
+      }
+    } catch (_) {
+      const fallback = '200' + Math.floor(100000000 + Math.random() * 900000000);
+      setFormData((prev) => ({ ...prev, barcode: fallback }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setErrorMsg(null);
 
     if (!formData.name.trim() || formData.salePrice <= 0) {
@@ -148,34 +161,38 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
       return;
     }
 
-    if (editingProduct) {
-      const res = await apiRequest<Product>(`/products/${editingProduct.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(formData),
-      });
+    try {
+      if (editingProduct) {
+        const res = await apiRequest<Product>(`/products/${editingProduct.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(formData),
+        });
 
-      if (res.success) {
-        setSuccessMsg('محصول با موفقیت ویرایش شد.');
-        setShowModal(false);
-        loadData();
-        if (onRefreshData) onRefreshData();
+        if (res.success) {
+          setSuccessMsg('محصول با موفقیت ویرایش شد.');
+          setShowModal(false);
+          await loadData();
+          if (onRefreshData) onRefreshData();
+        } else {
+          setErrorMsg(res.message || 'خطا در ویرایش محصول');
+        }
       } else {
-        setErrorMsg(res.message || 'خطا در ویرایش محصول');
-      }
-    } else {
-      const res = await apiRequest<Product>('/products', {
-        method: 'POST',
-        body: JSON.stringify(formData),
-      });
+        const res = await apiRequest<Product>('/products', {
+          method: 'POST',
+          body: JSON.stringify(formData),
+        });
 
-      if (res.success) {
-        setSuccessMsg('محصول جدید با موفقیت ثبت شد.');
-        setShowModal(false);
-        loadData();
-        if (onRefreshData) onRefreshData();
-      } else {
-        setErrorMsg(res.message || 'خطا در ایجاد محصول');
+        if (res.success) {
+          setSuccessMsg('محصول جدید با موفقیت ثبت شد.');
+          setShowModal(false);
+          await loadData();
+          if (onRefreshData) onRefreshData();
+        } else {
+          setErrorMsg(res.message || 'خطا در ایجاد محصول');
+        }
       }
+    } catch (err: any) {
+      setErrorMsg('خطای اتصال به سرور: ' + (err?.message || ''));
     }
   };
 
@@ -576,7 +593,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                     </button>
                     <button
                       type="button"
-                      onClick={handleGenerateBarcode}
+                      onClick={(e) => handleGenerateBarcode(e)}
                       className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer shrink-0"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />

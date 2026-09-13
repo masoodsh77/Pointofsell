@@ -72,6 +72,7 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (numValue <= 0) {
       setErrorMsg('لطفاً یک مقدار عددی بزرگتر از صفر برای تغییر قیمت وارد کنید.');
       return;
@@ -85,28 +86,33 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
     setIsLoading(true);
     setErrorMsg(null);
 
-    const payload = {
-      productIds: scope === 'SELECTED' ? selectedProductIds : scope === 'ALL' ? ['ALL'] : affectedProducts.map((p) => p.id),
-      categoryId: scope === 'CATEGORY' ? selectedCategory : undefined,
-      targetPrice,
-      mode,
-      operation,
-      value: numValue,
-      roundTo,
-    };
+    try {
+      const payload = {
+        productIds: scope === 'SELECTED' ? selectedProductIds : scope === 'ALL' ? ['ALL'] : affectedProducts.map((p) => p.id),
+        categoryId: scope === 'CATEGORY' ? selectedCategory : undefined,
+        targetPrice,
+        mode,
+        operation,
+        value: numValue,
+        roundTo,
+      };
 
-    const res = await apiRequest('/products/bulk-update-price', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+      const res = await apiRequest('/products/bulk-update-price', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
 
-    setIsLoading(false);
+      setIsLoading(false);
 
-    if (res.success) {
-      onSuccess();
-      onClose();
-    } else {
-      setErrorMsg(res.message || 'خطا در اعمال تغییر قیمت گروهی');
+      if (res.success) {
+        onSuccess();
+        onClose();
+      } else {
+        setErrorMsg(res.message || 'خطا در اعمال تغییر قیمت گروهی');
+      }
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMsg('خطا در ارتباط با سرور: ' + (err?.message || ''));
     }
   };
 

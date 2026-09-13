@@ -27,36 +27,72 @@ import { DashboardView } from './components/dashboard/DashboardView';
 
 const MainLayout: React.FC = () => {
   const { user, isAdmin, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabType>('pos');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    try {
+      const saved = localStorage.getItem('nuts_pos_active_tab') as TabType;
+      if (saved) return saved;
+    } catch (_) {}
+    return 'pos';
+  });
   const [settings, setSettings] = useState<StoreSettings | null>(null);
   const [lowStockCount, setLowStockCount] = useState<number>(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const hasInitializedTab = React.useRef<boolean>(false);
 
   // Load Store Settings & Low Stock Alerts
   const loadInitialAppData = useCallback(async () => {
     if (!user) return;
 
-    const [settingsRes, invRes] = await Promise.all([
-      apiRequest<StoreSettings>('/settings'),
-      apiRequest<{ items: any[]; summary: any }>('/inventory'),
-    ]);
+    try {
+      const [settingsRes, invRes] = await Promise.all([
+        apiRequest<StoreSettings>('/settings'),
+        apiRequest<{ items: any[]; summary: any }>('/inventory'),
+      ]);
 
-    if (settingsRes.success && settingsRes.data) {
-      setSettings(settingsRes.data);
-    }
-    if (invRes.success && invRes.data) {
-      const lowCount = invRes.data.items.filter((i) => i.isLowStock).length;
-      setLowStockCount(lowCount);
+      if (settingsRes.success && settingsRes.data) {
+        setSettings(settingsRes.data);
+      }
+      if (invRes.success && invRes.data) {
+        const lowCount = invRes.data.items.filter((i) => i.isLowStock).length;
+        setLowStockCount(lowCount);
+      }
+    } catch (err) {
+      console.error('Failed to load initial data:', err);
     }
   }, [user]);
 
+  // Initial load & initial tab setup (runs once per user authentication, never resets active tab on data refresh)
   useEffect(() => {
     loadInitialAppData();
-    // Default starting tab: dashboard for admin, pos for seller
-    if (isAdmin) {
-      setActiveTab('dashboard');
-    } else {
-      setActiveTab('pos');
+
+    if (!hasInitializedTab.current && user) {
+      hasInitializedTab.current = true;
+      try {
+        const saved = localStorage.getItem('nuts_pos_active_tab') as TabType;
+        const adminOnlyTabs: TabType[] = [
+          'dashboard',
+          'products',
+          'categories',
+          'purchases',
+          'accounting',
+          'suppliers',
+          'reports',
+          'users',
+          'backup',
+          'settings',
+        ];
+        if (saved) {
+          if (!isAdmin && adminOnlyTabs.includes(saved)) {
+            setActiveTab('pos');
+          } else {
+            setActiveTab(saved);
+          }
+        } else {
+          setActiveTab(isAdmin ? 'dashboard' : 'pos');
+        }
+      } catch (_) {
+        setActiveTab(isAdmin ? 'dashboard' : 'pos');
+      }
     }
   }, [user, isAdmin, loadInitialAppData]);
 
@@ -75,11 +111,11 @@ const MainLayout: React.FC = () => {
       'settings',
     ];
 
-    if (!isAdmin && adminOnlyTabs.includes(tab)) {
-      setActiveTab('pos');
-    } else {
-      setActiveTab(tab);
-    }
+    const targetTab = !isAdmin && adminOnlyTabs.includes(tab) ? 'pos' : tab;
+    setActiveTab(targetTab);
+    try {
+      localStorage.setItem('nuts_pos_active_tab', targetTab);
+    } catch (_) {}
     setIsMobileMenuOpen(false);
   };
 

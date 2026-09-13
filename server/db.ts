@@ -341,22 +341,19 @@ class DatabaseManager {
     }
   }
 
-  // Next Unique Numbers
+  // Next Unique Numbers (in-memory counter increment, committed to disk when entities are saved)
   public getNextInvoiceNumber(): string {
     const nextVal = this.data.counters.invoice++;
-    this.commit();
     return `INV-1403-${nextVal}`;
   }
 
   public getNextPurchaseNumber(): string {
     const nextVal = this.data.counters.purchase++;
-    this.commit();
     return `PUR-1403-${nextVal}`;
   }
 
   public getNextBarcode(): string {
     const nextVal = this.data.counters.barcode++;
-    this.commit();
     return String(nextVal);
   }
 }
