@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { db } from './db';
 import { Role, User, Permission } from '../src/types';
+import { ALL_PERMISSIONS } from '../src/utils/permissions';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nuts_pos_store_secure_jwt_secret_key_2026';
 
@@ -40,11 +41,25 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
       return;
     }
 
+    const roleDef = rawData.roles?.find((r) => r.id === foundUser.role);
+    const resolvedPermissions: Permission[] =
+      foundUser.role === 'ADMIN'
+        ? [...ALL_PERMISSIONS]
+        : Array.from(
+            new Set([
+              ...(roleDef?.permissions || []),
+              ...(foundUser.customPermissions || []),
+            ])
+          );
+
     req.user = {
       id: foundUser.id,
       username: foundUser.username,
       name: foundUser.name,
       role: foundUser.role,
+      roleName: roleDef ? roleDef.name : (foundUser.role === 'ADMIN' ? 'مدیر کل' : 'صندوق‌دار'),
+      permissions: resolvedPermissions,
+      customPermissions: foundUser.customPermissions,
       isActive: foundUser.isActive,
       createdAt: foundUser.createdAt,
     };
@@ -63,6 +78,30 @@ export function requireRole(roles: Role | Role[]) {
     }
     if (!allowed.includes(req.user.role)) {
       res.status(403).json({ success: false, message: 'شما دسترسی لازم برای این عملیات را ندارید.' });
+      return;
+    }
+    next();
+  };
+}
+
+export function requirePermission(permission: Permission | Permission[]) {
+  const required = Array.isArray(permission) ? permission : [permission];
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'احراز هویت الزامی است.' });
+      return;
+    }
+    if (req.user.role === 'ADMIN') {
+      next();
+      return;
+    }
+    const userPermissions = req.user.permissions || [];
+    const hasAny = required.some((p) => userPermissions.includes(p));
+    if (!hasAny) {
+      res.status(403).json({
+        success: false,
+        message: 'شما دسترسی لازم برای انجام این عملیات را ندارید.',
+      });
       return;
     }
     next();

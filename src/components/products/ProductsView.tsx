@@ -13,6 +13,8 @@ import { CameraBarcodeScannerModal } from '../common/CameraBarcodeScannerModal';
 import { BulkPriceUpdateModal } from './BulkPriceUpdateModal';
 import { ShelfPriceTagModal } from './ShelfPriceTagModal';
 import { PriceInput } from '../common/PriceInput';
+import { ProductImagePicker } from '../common/ProductImagePicker';
+import { ProductThumbnail } from '../common/ProductThumbnail';
 import {
   Package,
   Plus,
@@ -77,6 +79,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
     unit: 'KG' as ProductUnit,
     isWeighted: true,
     description: '',
+    image: '',
   });
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -115,6 +118,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
       unit: 'KG',
       isWeighted: true,
       description: '',
+      image: '',
     });
     setShowModal(true);
   };
@@ -133,6 +137,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
       unit: p.unit,
       isWeighted: p.isWeighted,
       description: p.description || '',
+      image: p.image || '',
     });
     setShowModal(true);
   };
@@ -459,9 +464,14 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                           />
                         </td>
                       )}
-                      <td className="py-3 px-4 font-bold text-white">
-                        <div>{p.name}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">{p.sku}</div>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <ProductThumbnail src={p.image} alt={p.name} size="md" />
+                          <div>
+                            <div className="font-bold text-white text-xs">{p.name}</div>
+                            <div className="text-[10px] text-slate-500 font-mono">{p.sku}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3 px-3 text-slate-300">{p.categoryName || '-'}</td>
                       <td className="py-3 px-3 font-mono text-slate-400">{p.barcode}</td>
@@ -713,6 +723,15 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                     />
                     <span>فروش وزنی فله‌ای (محاسبه گرم و کیلو)</span>
                   </label>
+                </div>
+
+                {/* Product Image Section */}
+                <div className="sm:col-span-2 pt-2 border-t border-white/5">
+                  <ProductImagePicker
+                    value={formData.image}
+                    onChange={(img) => setFormData({ ...formData, image: img })}
+                    productName={formData.name}
+                  />
                 </div>
               </div>
 

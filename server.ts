@@ -77,6 +77,7 @@ import customersRoutes from './server/routes/customers';
 import suppliersRoutes from './server/routes/suppliers';
 import reportsRoutes from './server/routes/reports';
 import usersRoutes from './server/routes/users';
+import rolesRoutes from './server/routes/roles';
 import backupRoutes from './server/routes/backup';
 import settingsRoutes from './server/routes/settings';
 import accountingRoutes from './server/routes/accounting';
@@ -102,6 +103,7 @@ async function startServer() {
   app.use('/api/accounting', accountingRoutes);
   app.use('/api/reports', reportsRoutes);
   app.use('/api/users', usersRoutes);
+  app.use('/api/roles', rolesRoutes);
   app.use('/api/backup', backupRoutes);
   app.use('/api/settings', settingsRoutes);
 

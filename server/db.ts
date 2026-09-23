@@ -14,11 +14,13 @@ import {
   BackupMeta,
   BackupItem,
   Role,
+  RoleDefinition,
   Permission,
   Expense,
   Cheque,
   CustomerTransaction,
 } from "../src/types";
+import { DEFAULT_SYSTEM_ROLES } from "../src/utils/permissions";
 
 // Ensure data and backup directories exist
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -35,6 +37,7 @@ const DB_FILE = path.join(DATA_DIR, "store.json");
 
 export interface DatabaseSchema {
   users: (User & { passwordHash: string })[];
+  roles: RoleDefinition[];
   categories: Category[];
   products: Product[];
   customers: Customer[];
@@ -159,6 +162,7 @@ function getInitialSeedData(): DatabaseSchema {
 
   return {
     users,
+    roles: DEFAULT_SYSTEM_ROLES,
     categories,
     products,
     customers,
@@ -195,6 +199,7 @@ class DatabaseManager {
         // ensure all collections exist
         return {
           users: parsed.users || [],
+          roles: (parsed.roles && Array.isArray(parsed.roles) && parsed.roles.length > 0) ? parsed.roles : DEFAULT_SYSTEM_ROLES,
           categories: parsed.categories || [],
           products: parsed.products || [],
           customers: parsed.customers || [],
@@ -285,6 +290,7 @@ class DatabaseManager {
     const parsed = JSON.parse(fileContent);
     this.data = {
       users: parsed.users || [],
+      roles: parsed.roles || DEFAULT_SYSTEM_ROLES,
       categories: parsed.categories || [],
       products: parsed.products || [],
       customers: parsed.customers || [],

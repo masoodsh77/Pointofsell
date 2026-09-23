@@ -32,11 +32,25 @@ router.post('/login', (req: Request, res: Response): void => {
     return;
   }
 
+  const roleDef = rawData.roles?.find((r) => r.id === user.role);
+  const resolvedPermissions =
+    user.role === 'ADMIN'
+      ? undefined
+      : Array.from(
+          new Set([
+            ...(roleDef?.permissions || []),
+            ...(user.customPermissions || []),
+          ])
+        );
+
   const safeUser = {
     id: user.id,
     username: user.username,
     name: user.name,
     role: user.role,
+    roleName: roleDef ? roleDef.name : (user.role === 'ADMIN' ? 'مدیر کل' : 'صندوق‌دار'),
+    permissions: resolvedPermissions,
+    customPermissions: user.customPermissions,
     isActive: user.isActive,
     createdAt: user.createdAt,
   };

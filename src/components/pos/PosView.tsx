@@ -604,25 +604,54 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
                     }`}
                   >
                     <div>
-                      {/* Badge Row */}
-                      <div className="flex items-center justify-between gap-1 mb-1 sm:mb-1.5">
-                        <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono truncate max-w-[80px]">
-                          {product.sku}
-                        </span>
-                        <span
-                          className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-bold ${
-                            isOutOfStock
-                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                              : isLow
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          }`}
-                        >
-                          {isOutOfStock
-                            ? 'ناموجود'
-                            : `موجود: ${formatWeightOrQuantity(product.stock, product.unit)}`}
-                        </span>
-                      </div>
+                      {/* Product Image & Badge */}
+                      {product.image ? (
+                        <div className="relative mb-2 rounded-xl overflow-hidden aspect-16/10 bg-black/40 border border-white/5 group-hover:border-amber-500/30 transition-all">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                          <div className="absolute top-1.5 right-1.5 left-1.5 flex items-center justify-between">
+                            <span className="text-[9px] text-white/90 bg-black/60 backdrop-blur-xs font-mono px-1.5 py-0.5 rounded-md">
+                              {product.sku}
+                            </span>
+                            <span
+                              className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold backdrop-blur-xs ${
+                                isOutOfStock
+                                  ? 'bg-rose-500/80 text-white'
+                                  : isLow
+                                  ? 'bg-amber-500/80 text-slate-950'
+                                  : 'bg-emerald-500/80 text-white'
+                              }`}
+                            >
+                              {isOutOfStock
+                                ? 'ناموجود'
+                                : `${formatWeightOrQuantity(product.stock, product.unit)}`}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-1 mb-1 sm:mb-1.5">
+                          <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono truncate max-w-[80px]">
+                            {product.sku}
+                          </span>
+                          <span
+                            className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-bold ${
+                              isOutOfStock
+                                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                : isLow
+                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            }`}
+                          >
+                            {isOutOfStock
+                              ? 'ناموجود'
+                              : `موجود: ${formatWeightOrQuantity(product.stock, product.unit)}`}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Title */}
                       <h3 className="text-xs sm:text-xs font-bold text-slate-200 line-clamp-2 leading-snug group-hover:text-amber-400 transition-colors">
@@ -746,13 +775,21 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
               >
                 {/* Item Header */}
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <h4 className="text-xs font-bold text-slate-200 leading-tight">
-                      {item.product.name}
-                    </h4>
+                  <div className="flex items-center gap-2.5 flex-1">
+                    {item.product.image && (
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="w-10 h-10 rounded-xl object-cover border border-white/10 shrink-0"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h4 className="text-xs font-bold text-slate-200 leading-tight">
+                        {item.product.name}
+                      </h4>
 
-                    {/* Unit Sale Price with Inline Quick Edit */}
-                    {editingPriceIndex === idx ? (
+                      {/* Unit Sale Price with Inline Quick Edit */}
+                      {editingPriceIndex === idx ? (
                       <div className="flex items-center gap-1.5 mt-1">
                         <span className="text-[10px] text-amber-400 shrink-0">فی جدید:</span>
                         <div className="w-28">
@@ -796,8 +833,9 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => removeFromCart(idx)}
+                </div>
+                <button
+                  onClick={() => removeFromCart(idx)}
                     className="p-1 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

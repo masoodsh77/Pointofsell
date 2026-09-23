@@ -28,7 +28,7 @@ import { SettingsView } from './components/settings/SettingsView';
 import { DashboardView } from './components/dashboard/DashboardView';
 
 const MainLayout: React.FC = () => {
-  const { user, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isLoading, canAccessTab } = useAuth();
   const { currency, setCurrency } = useCurrency();
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     try {
@@ -199,35 +199,35 @@ const MainLayout: React.FC = () => {
         />
 
         <main key={currency} className="flex-1 overflow-y-auto min-w-0 pb-16 lg:pb-0 bg-[#0a0a0a]">
-          {activeTab === 'dashboard' && isAdmin && (
+          {activeTab === 'dashboard' && canAccessTab('dashboard') && (
             <DashboardView onNavigate={(tab) => handleSelectTab(tab)} />
           )}
-          {activeTab === 'pos' && (
+          {activeTab === 'pos' && canAccessTab('pos') && (
             <PosView settings={settings} onRefreshData={loadInitialAppData} />
           )}
-          {activeTab === 'sales' && (
+          {activeTab === 'sales' && canAccessTab('sales') && (
             <SalesHistoryView settings={settings} onRefreshData={loadInitialAppData} />
           )}
-          {activeTab === 'products' && isAdmin && (
+          {activeTab === 'products' && canAccessTab('products') && (
             <ProductsView settings={settings} onRefreshData={loadInitialAppData} />
           )}
-          {activeTab === 'categories' && isAdmin && <CategoriesView />}
-          {activeTab === 'inventory' && (
+          {activeTab === 'categories' && canAccessTab('categories') && <CategoriesView />}
+          {activeTab === 'inventory' && canAccessTab('inventory') && (
             <InventoryView onRefreshData={loadInitialAppData} />
           )}
-          {activeTab === 'purchases' && isAdmin && (
+          {activeTab === 'purchases' && canAccessTab('purchases') && (
             <PurchasesView onRefreshData={loadInitialAppData} />
           )}
-          {activeTab === 'accounting' && isAdmin && (
+          {activeTab === 'accounting' && canAccessTab('accounting') && (
             <AccountingView currentUser={user} />
           )}
-          {activeTab === 'customers' && <CustomersView />}
-          {activeTab === 'suppliers' && isAdmin && <SuppliersView />}
-          {activeTab === 'reports' && isAdmin && <ReportsView />}
-          {activeTab === 'barcode' && <BarcodeManager settings={settings} />}
-          {activeTab === 'users' && isAdmin && <UsersView />}
-          {activeTab === 'backup' && isAdmin && <BackupView />}
-          {activeTab === 'settings' && isAdmin && (
+          {activeTab === 'customers' && canAccessTab('customers') && <CustomersView />}
+          {activeTab === 'suppliers' && canAccessTab('suppliers') && <SuppliersView />}
+          {activeTab === 'reports' && canAccessTab('reports') && <ReportsView />}
+          {activeTab === 'barcode' && canAccessTab('barcode') && <BarcodeManager settings={settings} />}
+          {activeTab === 'users' && canAccessTab('users') && <UsersView />}
+          {activeTab === 'backup' && canAccessTab('backup') && <BackupView />}
+          {activeTab === 'settings' && canAccessTab('settings') && (
             <SettingsView settings={settings} onRefreshSettings={loadInitialAppData} />
           )}
         </main>

@@ -2,27 +2,43 @@ import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db';
 import { authMiddleware, requireRole, AuthRequest } from '../auth';
-import { User, Role } from '../../src/types';
+import { ALL_PERMISSIONS } from '../../src/utils/permissions';
 
 const router = Router();
 
 // GET /api/users (Admin only)
 router.get('/', authMiddleware, requireRole('ADMIN'), (_req: AuthRequest, res: Response): void => {
   const rawData = db.getRawData();
-  const safeUsers = rawData.users.map((u) => ({
-    id: u.id,
-    username: u.username,
-    name: u.name,
-    role: u.role,
-    isActive: u.isActive,
-    createdAt: u.createdAt,
-  }));
+  const safeUsers = rawData.users.map((u) => {
+    const roleDef = rawData.roles?.find((r) => r.id === u.role);
+    const resolvedPermissions =
+      u.role === 'ADMIN'
+        ? [...ALL_PERMISSIONS]
+        : Array.from(
+            new Set([
+              ...(roleDef?.permissions || []),
+              ...(u.customPermissions || []),
+            ])
+          );
+
+    return {
+      id: u.id,
+      username: u.username,
+      name: u.name,
+      role: u.role,
+      roleName: roleDef ? roleDef.name : (u.role === 'ADMIN' ? 'مدیر کل' : 'صندوق‌دار'),
+      permissions: resolvedPermissions,
+      customPermissions: u.customPermissions,
+      isActive: u.isActive,
+      createdAt: u.createdAt,
+    };
+  });
   res.json({ success: true, data: safeUsers });
 });
 
 // POST /api/users (Admin only: Create new user)
 router.post('/', authMiddleware, requireRole('ADMIN'), (req: AuthRequest, res: Response): void => {
-  const { username, name, password, role } = req.body;
+  const { username, name, password, role, customPermissions } = req.body;
 
   if (!username || !password || !name) {
     res.status(400).json({ success: false, message: 'نام، نام کاربری و رمز عبور الزامی است.' });
@@ -37,12 +53,17 @@ router.post('/', authMiddleware, requireRole('ADMIN'), (req: AuthRequest, res: R
     return;
   }
 
+  // Validate role exists
+  const roleId = role || 'SELLER';
+  const roleDef = rawData.roles?.find((r) => r.id === roleId);
+
   const passwordHash = bcrypt.hashSync(password, 10);
   const newUser = {
     id: `u-${Date.now()}`,
     username: normalizedUsername,
     name: String(name).trim(),
-    role: (role === 'ADMIN' ? 'ADMIN' : 'SELLER') as Role,
+    role: roleId,
+    customPermissions: Array.isArray(customPermissions) ? customPermissions : undefined,
     isActive: true,
     createdAt: new Date().toISOString(),
     passwordHash,
@@ -51,6 +72,16 @@ router.post('/', authMiddleware, requireRole('ADMIN'), (req: AuthRequest, res: R
   rawData.users.push(newUser);
   db.commit();
 
+  const resolvedPermissions =
+    newUser.role === 'ADMIN'
+      ? [...ALL_PERMISSIONS]
+      : Array.from(
+          new Set([
+            ...(roleDef?.permissions || []),
+            ...(newUser.customPermissions || []),
+          ])
+        );
+
   res.status(201).json({
     success: true,
     data: {
@@ -58,9 +89,13 @@ router.post('/', authMiddleware, requireRole('ADMIN'), (req: AuthRequest, res: R
       username: newUser.username,
       name: newUser.name,
       role: newUser.role,
+      roleName: roleDef ? roleDef.name : (newUser.role === 'ADMIN' ? 'مدیر کل' : 'صندوق‌دار'),
+      permissions: resolvedPermissions,
+      customPermissions: newUser.customPermissions,
       isActive: newUser.isActive,
       createdAt: newUser.createdAt,
     },
+    message: 'کاربر جدید با موفقیت ثبت شد.',
   });
 });
 
@@ -74,7 +109,7 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), (req: AuthRequest, res:
     return;
   }
 
-  const { name, role, isActive } = req.body;
+  const { name, role, customPermissions, isActive, password } = req.body;
   const user = rawData.users[index];
 
   // Prevent disabling self
@@ -83,11 +118,34 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), (req: AuthRequest, res:
     return;
   }
 
+  // Prevent changing master admin role to seller
+  if (user.username === 'admin' && role && role !== 'ADMIN') {
+    res.status(400).json({ success: false, message: 'نقش مدیر اصلی سیستم قابل تغییر نیست.' });
+    return;
+  }
+
   if (name !== undefined) user.name = String(name).trim();
-  if (role !== undefined && (role === 'ADMIN' || role === 'SELLER')) user.role = role;
+  if (role !== undefined) user.role = role;
+  if (customPermissions !== undefined) {
+    user.customPermissions = Array.isArray(customPermissions) ? customPermissions : undefined;
+  }
   if (isActive !== undefined) user.isActive = Boolean(isActive);
+  if (password && String(password).trim().length >= 4) {
+    user.passwordHash = bcrypt.hashSync(String(password).trim(), 10);
+  }
 
   db.commit();
+
+  const roleDef = rawData.roles?.find((r) => r.id === user.role);
+  const resolvedPermissions =
+    user.role === 'ADMIN'
+      ? [...ALL_PERMISSIONS]
+      : Array.from(
+          new Set([
+            ...(roleDef?.permissions || []),
+            ...(user.customPermissions || []),
+          ])
+        );
 
   res.json({
     success: true,
@@ -96,9 +154,13 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), (req: AuthRequest, res:
       username: user.username,
       name: user.name,
       role: user.role,
+      roleName: roleDef ? roleDef.name : (user.role === 'ADMIN' ? 'مدیر کل' : 'صندوق‌دار'),
+      permissions: resolvedPermissions,
+      customPermissions: user.customPermissions,
       isActive: user.isActive,
       createdAt: user.createdAt,
     },
+    message: 'اطلاعات کاربر با موفقیت به‌روزرسانی شد.',
   });
 });
 

@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
   onOpenSearch,
 }) => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, canAccessTab } = useAuth();
 
   const handleNavClick = (tab: TabType) => {
     onSelectTab(tab);
@@ -121,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <nav className="space-y-1">
             {mainNavItems
-              .filter((item) => !item.adminOnly || isAdmin)
+              .filter((item) => canAccessTab(item.id))
               .map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -157,15 +157,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Navigation Group 2: System Management (Admin Only) */}
-        {isAdmin && (
+        {/* Navigation Group 2: System Management */}
+        {adminNavItems.some((item) => canAccessTab(item.id)) && (
           <div>
             <div className="px-3 mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               مدیریت و امنیت سامانه
             </div>
             <nav className="space-y-1">
-              {adminNavItems.map((item) => {
-                const Icon = item.icon;
+              {adminNavItems
+                .filter((item) => canAccessTab(item.id))
+                .map((item) => {
+                  const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 return (
                   <button

@@ -1,30 +1,62 @@
-export type Role = 'ADMIN' | 'SELLER';
+export type Role = string;
 
 export type Permission =
+  // Dashboard & Reports
+  | 'DASHBOARD_VIEW'
+  | 'REPORTS_VIEW'
+  | 'PROFIT_VIEW'
+  // POS & Sales
+  | 'POS_ACCESS'
+  | 'SALES_VIEW'
+  | 'SALES_CREATE'
+  | 'SALES_CANCEL'
+  | 'SALES_DISCOUNT'
+  // Products & Pricing
   | 'PRODUCT_VIEW'
   | 'PRODUCT_CREATE'
   | 'PRODUCT_EDIT'
   | 'PRODUCT_DELETE'
-  | 'SALES_VIEW'
-  | 'SALES_CREATE'
-  | 'SALES_CANCEL'
-  | 'PURCHASE_VIEW'
-  | 'PURCHASE_CREATE'
+  | 'PURCHASE_PRICE_VIEW'
+  | 'CATEGORIES_MANAGE'
+  | 'BARCODE_PRINT'
+  // Inventory & Purchases
   | 'INVENTORY_VIEW'
   | 'INVENTORY_ADJUST'
-  | 'PROFIT_VIEW'
-  | 'REPORT_VIEW'
+  | 'PURCHASES_MANAGE'
+  | 'PURCHASE_VIEW'
+  | 'PURCHASE_CREATE'
+  | 'SUPPLIERS_MANAGE'
+  // Accounting & Customers
+  | 'ACCOUNTING_MANAGE'
+  | 'CUSTOMERS_MANAGE'
+  // System & Admin
+  | 'USERS_MANAGE'
   | 'USER_MANAGEMENT'
+  | 'SETTINGS_MANAGE'
   | 'SETTINGS'
-  | 'BACKUP'
-  | 'BARCODE_PRINT';
+  | 'BACKUP_MANAGE'
+  | 'BACKUP';
+
+export interface RoleDefinition {
+  id: string;
+  name: string;
+  description?: string;
+  isSystem?: boolean;
+  color?: string;
+  permissions: Permission[];
+  createdAt: string;
+  updatedAt: string;
+  userCount?: number;
+}
 
 export interface User {
   id: string;
   username: string;
   name: string;
-  role: Role;
+  role: string;
+  roleName?: string;
   permissions?: Permission[];
+  customPermissions?: Permission[];
   isActive: boolean;
   createdAt: string;
 }
