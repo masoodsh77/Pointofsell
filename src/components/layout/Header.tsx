@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { StoreSettings } from '../../types';
 import { formatPersianDate, toPersianDigits } from '../../utils/persian';
 import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
@@ -14,6 +15,8 @@ import {
   X,
   Camera,
   Palette,
+  Search,
+  Coins,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -23,6 +26,7 @@ interface HeaderProps {
   onToggleMobileMenu?: () => void;
   isMobileMenuOpen?: boolean;
   onQuickScan?: () => void;
+  onOpenSearch?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,8 +36,10 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleMobileMenu,
   isMobileMenuOpen = false,
   onQuickScan,
+  onOpenSearch,
 }) => {
   const { user, logout, isAdmin } = useAuth();
+  const { currency, toggleCurrency } = useCurrency();
   const [timeStr, setTimeStr] = useState<string>('');
   const [showThemeModal, setShowThemeModal] = useState<boolean>(false);
 
@@ -56,9 +62,9 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="h-16 bg-[#141414] border-b border-white/5 sticky top-0 z-40 px-3 sm:px-6 flex items-center justify-between shadow-md select-none">
+      <header className="h-16 bg-[#141414] border-b border-white/5 sticky top-0 z-40 px-3 sm:px-6 flex items-center justify-between shadow-md select-none gap-2">
         {/* Right side: Mobile Menu Button + Store Name & Solar Date */}
-        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 shrink-0">
           {/* Mobile Hamburger Toggle Button */}
           {onToggleMobileMenu && (
             <button
@@ -75,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Store className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
+            <h1 className="text-sm sm:text-base font-bold text-white tracking-tight truncate max-w-[150px] sm:max-w-[240px] md:max-w-none">
               {settings?.storeName || 'فروشگاه آجیل و خشکبار زعفران طلایی'}
             </h1>
             <div className="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1.5 sm:gap-2 truncate">
@@ -89,8 +95,69 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Left side: Theme Customizer + Camera Scan + Low Stock Alert + User Profile + Logout */}
+        {/* Center: Search Trigger Bar */}
+        {onOpenSearch && (
+          <div className="hidden md:flex flex-1 max-w-md mx-2">
+            <button
+              id="header-menu-search-btn"
+              type="button"
+              onClick={onOpenSearch}
+              className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 text-slate-300 hover:text-white transition-all cursor-pointer group shadow-inner"
+              title="جستجو در تمام منوها، تنظیمات، واحد پول و بخش‌ها (Ctrl + K)"
+            >
+              <div className="flex items-center gap-2.5">
+                <Search className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs text-slate-400 group-hover:text-slate-200 transition-colors">
+                  جستجو در منوها و تنظیمات...
+                </span>
+              </div>
+              <kbd className="inline-flex items-center gap-1 text-[10px] font-mono bg-white/10 text-slate-400 group-hover:text-amber-300 px-2 py-0.5 rounded-lg border border-white/10 transition-colors">
+                <span>Ctrl</span>
+                <span>K</span>
+              </kbd>
+            </button>
+          </div>
+        )}
+
+        {/* Left side: Mobile Search + Currency Switcher + Theme + Camera + Low Stock + User Profile + Logout */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Mobile Search Button */}
+          {onOpenSearch && (
+            <button
+              id="header-mobile-search-btn"
+              type="button"
+              onClick={onOpenSearch}
+              className="md:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-amber-400 transition-colors cursor-pointer"
+              title="جستجو در منوها (Ctrl+K)"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Currency Switcher Badge */}
+          <button
+            id="header-currency-toggle-btn"
+            type="button"
+            onClick={toggleCurrency}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-xs font-bold transition-all cursor-pointer group"
+            title={`واحد پولی: ${currency} (جهت تغییر سریع کلیک کنید)`}
+          >
+            <Coins className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <span className="text-slate-400 hidden sm:inline text-[11px]">واحد:</span>
+            <span
+              className={`px-2 py-0.5 rounded-lg text-xs font-black transition-colors ${
+                currency === 'ریال'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+              }`}
+            >
+              {currency}
+            </span>
+            <span className="text-[10px] text-slate-500 hidden xl:inline font-mono">
+              {currency === 'ریال' ? '(۱۰x)' : '(معمولی)'}
+            </span>
+          </button>
+
           {/* Quick Theme Selector Button */}
           <button
             id="header-theme-selector-btn"
@@ -99,7 +166,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="شخصی‌سازی رنگ و تم نرم‌افزار"
           >
             <Palette className="w-4 h-4 text-amber-400" />
-            <span className="hidden md:inline">تغییر تم</span>
+            <span className="hidden lg:inline">تغییر تم</span>
           </button>
 
           {/* Quick Mobile Barcode Scan Button */}

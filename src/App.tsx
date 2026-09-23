@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import { StoreSettings } from './types';
 import { apiRequest } from './services/api';
 
@@ -8,6 +9,7 @@ import { apiRequest } from './services/api';
 import { Header } from './components/layout/Header';
 import { Sidebar, TabType } from './components/layout/Sidebar';
 import { BottomNav } from './components/layout/BottomNav';
+import { NavigationSearchModal } from './components/layout/NavigationSearchModal';
 import { LoginView } from './components/auth/LoginView';
 import { PosView } from './components/pos/PosView';
 import { SalesHistoryView } from './components/sales/SalesHistoryView';
@@ -37,6 +39,7 @@ const MainLayout: React.FC = () => {
   const [settings, setSettings] = useState<StoreSettings | null>(null);
   const [lowStockCount, setLowStockCount] = useState<number>(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const hasInitializedTab = React.useRef<boolean>(false);
 
   // Load Store Settings & Low Stock Alerts
@@ -101,6 +104,18 @@ const MainLayout: React.FC = () => {
     } catch (_) {}
   }, [activeTab]);
 
+  // Global Keyboard Shortcut: Ctrl+K or Cmd+K to open Search in Menus & Settings
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Handle Role Guarding for Tab Navigation
   const handleSelectTab = (tab: TabType) => {
     const adminOnlyTabs: TabType[] = [
@@ -122,6 +137,25 @@ const MainLayout: React.FC = () => {
       localStorage.setItem('nuts_pos_active_tab', targetTab);
     } catch (_) {}
     setIsMobileMenuOpen(false);
+  };
+
+  // Handle Navigation from Search Modal with smooth scroll to targeted section
+  const handleSearchNavigate = (tab: TabType, sectionId?: string) => {
+    handleSelectTab(tab);
+    setIsSearchOpen(false);
+
+    if (sectionId) {
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-2', 'ring-amber-500', 'shadow-2xl', 'shadow-amber-500/20');
+          setTimeout(() => {
+            el.classList.remove('ring-2', 'ring-amber-500', 'shadow-2xl', 'shadow-amber-500/20');
+          }, 3000);
+        }
+      }, 250);
+    }
   };
 
   if (isLoading) {
@@ -146,6 +180,7 @@ const MainLayout: React.FC = () => {
         onNavigateToInventory={() => handleSelectTab('inventory')}
         onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
         onQuickScan={() => handleSelectTab('pos')}
+        onOpenSearch={() => setIsSearchOpen(true)}
       />
 
       {/* Main Workspace Layout (Sidebar + Active View) */}
@@ -156,6 +191,7 @@ const MainLayout: React.FC = () => {
           lowStockCount={lowStockCount}
           isMobileOpen={isMobileMenuOpen}
           onCloseMobile={() => setIsMobileMenuOpen(false)}
+          onOpenSearch={() => setIsSearchOpen(true)}
         />
 
         <main className="flex-1 overflow-y-auto min-w-0 pb-16 lg:pb-0 bg-[#0a0a0a]">
@@ -200,6 +236,13 @@ const MainLayout: React.FC = () => {
         onOpenMenu={() => setIsMobileMenuOpen(true)}
         lowStockCount={lowStockCount}
       />
+
+      {/* Menu & Settings Search Modal (Ctrl + K) */}
+      <NavigationSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onNavigate={handleSearchNavigate}
+      />
     </div>
   );
 };
@@ -208,7 +251,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <MainLayout />
+        <CurrencyProvider>
+          <MainLayout />
+        </CurrencyProvider>
       </AuthProvider>
     </ThemeProvider>
   );

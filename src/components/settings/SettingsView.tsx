@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StoreSettings, ThemeColor, FontFamily, FontSize, ReceiptTemplateType, PosProviderType } from '../../types';
 import { apiRequest } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
 import {
   Settings,
@@ -21,6 +22,9 @@ import {
   Layout,
   RefreshCw,
   Sparkles,
+  Coins,
+  ArrowRightLeft,
+  Check,
 } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -30,6 +34,7 @@ interface SettingsViewProps {
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshSettings }) => {
   const { themeColor, fontFamily, fontSize, setThemeColor, setFontFamily, setFontSize } = useTheme();
+  const { currency: globalCurrency, setCurrency: setGlobalCurrency } = useCurrency();
 
   const [formData, setFormData] = useState<StoreSettings>({
     storeName: '',
@@ -74,6 +79,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
       setFormData((prev) => ({
         ...prev,
         ...settings,
+        currency: (settings.currency === 'ریال' ? 'ریال' : 'تومان'),
         posTerminal: {
           ...prev.posTerminal,
           ...(settings.posTerminal || {}),
@@ -81,6 +87,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
       }));
     }
   }, [settings]);
+
+  const handleCurrencyChange = async (unit: 'تومان' | 'ریال') => {
+    setFormData((prev) => ({ ...prev, currency: unit }));
+    await setGlobalCurrency(unit, false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +104,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
     });
 
     if (res.success && res.data) {
-      setSuccessMsg('تنظیمات فروشگاه با موفقیت ذخیره و اعمال شد.');
+      if (formData.currency === 'ریال' || formData.currency === 'تومان') {
+        await setGlobalCurrency(formData.currency, false);
+      }
+      setSuccessMsg('تنظیمات فروشگاه و واحد پولی با موفقیت ذخیره و اعمال شد.');
       onRefreshSettings();
       setTimeout(() => setSuccessMsg(null), 4000);
     } else {
@@ -249,8 +263,142 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* ================= SECTION 0: CURRENCY UNIT (تومان / ریال) ================= */}
+        <div id="currency-settings-section" className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-5 transition-all">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <Coins className="w-4 h-4" />
+              </div>
+              <span>واحد پولی رسمی فروشگاه (تومان / ریال)</span>
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-400 font-medium">واحد فعال:</span>
+              <span className="px-3 py-1 bg-amber-500 text-slate-950 font-black rounded-xl text-xs shadow-md shadow-amber-500/20">
+                {formData.currency || 'تومان'}
+              </span>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed">
+            واحد پولی سامانه را بین <strong>تومان</strong> (متعارف بازار) و <strong>ریال</strong> (بانکی و رسمی) تعیین کنید.
+            زمانی که واحد روی <strong className="text-amber-400">ریال</strong> باشد، نسبت به تومان <strong>یک صفر بیشتر (۱۰ برابر)</strong> در صندوق، فاکتورها، انبارداری و اتیکت‌های قیمت محاسبه و نمایش داده می‌شود.
+          </p>
+
+          {/* Currency Selection Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Option 1: Toman */}
+            <div
+              onClick={() => handleCurrencyChange('تومان')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                (formData.currency || 'تومان') === 'تومان'
+                  ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/30'
+                  : 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className={`p-2.5 rounded-xl ${
+                    (formData.currency || 'تومان') === 'تومان' ? 'bg-amber-500 text-slate-950' : 'bg-white/10 text-slate-300'
+                  }`}>
+                    <Coins className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>تومان (پیش‌فرض فروشگاهی)</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        رایج بازار
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-amber-400 font-mono mt-0.5">
+                      مثال: ۲,۰۰۰ تومان
+                    </div>
+                  </div>
+                </div>
+                {(formData.currency || 'تومان') === 'تومان' && (
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+                    <Check className="w-4 h-4" />
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                تمام مبالغ و قیمت‌های محصولات به صورت متعارف و بدون صفر اضافی نمایش داده می‌شوند (مناسب خرید و فروش روزمره).
+              </p>
+            </div>
+
+            {/* Option 2: Rial */}
+            <div
+              onClick={() => handleCurrencyChange('ریال')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                formData.currency === 'ریال'
+                  ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/30'
+                  : 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className={`p-2.5 rounded-xl ${
+                    formData.currency === 'ریال' ? 'bg-amber-500 text-slate-950' : 'bg-white/10 text-slate-300'
+                  }`}>
+                    <Coins className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>ریال (رسمی و بانکی)</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                        ۱۰ برابر (یک صفر بیشتر)
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-amber-400 font-mono mt-0.5">
+                      مثال: ۲۰,۰۰۰ ریال
+                    </div>
+                  </div>
+                </div>
+                {formData.currency === 'ریال' && (
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+                    <Check className="w-4 h-4" />
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                یک صفر به تمام قیمت‌ها اضافه می‌شود. کاملاً منطبق با مبالغ درگاه‌های پرداخت، دستگاه‌های کارتخوان و اسناد رسمی بانکی.
+              </p>
+            </div>
+          </div>
+
+          {/* Live Conversion Simulator Card */}
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+            <div className="text-xs font-bold text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>شبیه‌ساز و پیش‌نمایش نحوه تبدیل قیمت‌ها:</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center text-xs">
+              <div className="p-3 bg-black/40 rounded-xl border border-white/5 text-center">
+                <div className="text-[11px] text-slate-400 mb-1">مبلغ به تومان</div>
+                <div className="font-mono font-bold text-white text-sm">۲,۰۰۰ تومان</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">دو هزار تومان</div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center text-amber-400 font-bold text-[11px]">
+                <div className="flex items-center gap-1">
+                  <span>ضرب در ۱۰</span>
+                  <ArrowRightLeft className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] text-slate-400 font-normal">افزودن یک صفر</span>
+              </div>
+
+              <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 text-center">
+                <div className="text-[11px] text-amber-400 mb-1">مبلغ معادل به ریال</div>
+                <div className="font-mono font-bold text-amber-300 text-sm">۲۰,۰۰۰ ریال</div>
+                <div className="text-[10px] text-amber-200/80 mt-0.5">بیست هزار ریال</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* ================= SECTION 1: THEME & FONT CUSTOMIZATION ================= */}
-        <div className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-5">
+        <div id="theme-settings-section" className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-5 transition-all">
           <div className="flex items-center justify-between border-b border-white/5 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <Palette className="w-4 h-4 text-amber-400" />
@@ -363,7 +511,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
         </div>
 
         {/* ================= SECTION 2: RECEIPT TEMPLATES ================= */}
-        <div className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4">
+        <div id="receipt-settings-section" className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4 transition-all">
           <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
             <Receipt className="w-4 h-4 text-amber-400" />
             <span>طرح‌های متنوع رسید و فاکتور فروش</span>
@@ -420,7 +568,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
         </div>
 
         {/* ================= SECTION 3: PC-POS TERMINAL CONFIG ================= */}
-        <div className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4">
+        <div id="pos-settings-section" className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4 transition-all">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-amber-400" />
@@ -631,7 +779,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
         </div>
 
         {/* ================= SECTION 4: STORE IDENTITY ================= */}
-        <div className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4">
+        <div id="store-identity-section" className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4 transition-all">
           <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
             <Store className="w-4 h-4 text-amber-400" />
             <span>مشخصات و هویت فروشگاه</span>
@@ -676,7 +824,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onRefreshS
         </div>
 
         {/* ================= SECTION 5: BACKUP & MAINTENANCE ================= */}
-        <div className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4">
+        <div id="backup-settings-section" className="bg-[#141414] p-6 rounded-3xl border border-white/5 shadow-xl space-y-4 transition-all">
           <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
             <ShieldCheck className="w-4 h-4 text-amber-400" />
             <span>تنظیمات پشتیبان‌گیری خودکار</span>

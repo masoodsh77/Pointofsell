@@ -27,10 +27,55 @@ export function formatNumber(num: number | string | undefined | null, addPersian
   return addPersianDigits ? toPersianDigits(formatted) : formatted;
 }
 
-// Format currency with Toman
-export function formatCurrency(amount: number | undefined | null, suffix = 'تومان'): string {
-  if (amount === undefined || amount === null) return `۰ ${suffix}`;
-  return `${formatNumber(Math.round(amount))} ${suffix}`;
+export type CurrencyUnit = 'تومان' | 'ریال';
+
+let currentAppCurrency: CurrencyUnit = (() => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = window.localStorage.getItem('nuts_pos_currency') as CurrencyUnit;
+      if (saved === 'ریال' || saved === 'تومان') return saved;
+    }
+  } catch (_) {}
+  return 'تومان';
+})();
+
+export function getAppCurrency(): CurrencyUnit {
+  return currentAppCurrency;
+}
+
+export function setAppCurrency(curr: CurrencyUnit): void {
+  currentAppCurrency = curr;
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('nuts_pos_currency', curr);
+      window.dispatchEvent(new CustomEvent('nuts_currency_changed', { detail: curr }));
+    }
+  } catch (_) {}
+}
+
+// Format currency with Toman or Rial (when Rial, multiplies by 10)
+export function formatCurrency(
+  amount: number | undefined | null,
+  customSuffix?: string
+): string {
+  const activeCurr = currentAppCurrency;
+  const isRial = (customSuffix === 'ریال') || (customSuffix === undefined && activeCurr === 'ریال');
+
+  if (amount === undefined || amount === null || isNaN(Number(amount))) {
+    const unit = customSuffix !== undefined ? customSuffix : activeCurr;
+    return `۰${unit ? ' ' + unit : ''}`;
+  }
+
+  const num = Number(amount);
+  const calculatedAmount = isRial ? Math.round(num * 10) : Math.round(num);
+  const formatted = formatNumber(calculatedAmount);
+
+  if (customSuffix === '') {
+    return formatted;
+  }
+
+  const unit = customSuffix !== undefined ? customSuffix : activeCurr;
+  return `${formatted} ${unit}`.trim();
 }
 
 // Convert numbers into Persian words (e.g. 1,500,000 -> یک میلیون و پانصد هزار)
