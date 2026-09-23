@@ -18,5 +18,5 @@
     "dist/*",
     "dist/**"
   ],
-  "ext": "ts,js,json"
+  "ext": "ts,js"
 }

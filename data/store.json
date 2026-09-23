@@ -22,6 +22,24 @@
   "categories": [],
   "products": [
     {
+      "id": "prod-1790142923505",
+      "name": "تست محصول جدید",
+      "sku": "SKU-1790142923505",
+      "barcode": "200000000019",
+      "categoryId": "cat-1",
+      "purchasePrice": 80000,
+      "salePrice": 120000,
+      "stock": 25,
+      "minimumStock": 5,
+      "unit": "KG",
+      "isWeighted": true,
+      "description": "",
+      "image": "",
+      "isActive": true,
+      "createdAt": "2026-09-23T05:55:23.505Z",
+      "updatedAt": "2026-09-23T05:55:23.505Z"
+    },
+    {
       "id": "prod-1789313062416",
       "name": "تست",
       "sku": "SKU-043923",
@@ -97,6 +115,19 @@
   ],
   "purchases": [],
   "stockMovements": [
+    {
+      "id": "sm-1790142923505",
+      "productId": "prod-1790142923505",
+      "productName": "تست محصول جدید",
+      "type": "INITIAL_STOCK",
+      "quantity": 25,
+      "previousStock": 0,
+      "newStock": 25,
+      "userId": "u-admin-1",
+      "userName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "notes": "ثبت محصول جدید با موجودی اولیه",
+      "createdAt": "2026-09-23T05:55:23.505Z"
+    },
     {
       "id": "sm-1789314887820",
       "productId": "prod-1789314887820",
@@ -196,6 +227,22 @@
   },
   "backups": [
     {
+      "id": "bk-1790142727855",
+      "filename": "backup-2026-09-23T05-52-07-855Z.json",
+      "fileSizeBytes": 7187,
+      "isManual": false,
+      "createdAt": "2026-09-23T05:52:07.855Z",
+      "recordCounts": {
+        "products": 1,
+        "sales": 1,
+        "purchases": 0,
+        "stockMovements": 5,
+        "customers": 1,
+        "suppliers": 0,
+        "users": 2
+      }
+    },
+    {
       "id": "bk-1789312114391",
       "filename": "backup-2026-09-13T15-08-34-391Z.json",
       "fileSizeBytes": 2654,
@@ -231,6 +278,6 @@
   "counters": {
     "invoice": 1004,
     "purchase": 5002,
-    "barcode": 200000000018
+    "barcode": 200000000020
   }
 }

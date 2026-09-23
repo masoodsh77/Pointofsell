@@ -238,7 +238,16 @@ export const UsersView: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSubmit(e);
+              }}
+              action="javascript:void(0);"
+              method="POST"
+              className="space-y-3"
+            >
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1">نام کامل کاربر *</label>
                 <input

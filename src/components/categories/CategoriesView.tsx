@@ -11,6 +11,7 @@ export const CategoriesView: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [color, setColor] = useState<string>('#f59e0b');
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -46,9 +47,10 @@ export const CategoriesView: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!name.trim()) return;
+    if (!name.trim() || isSaving) return;
 
     setErrorMsg(null);
+    setIsSaving(true);
     try {
       if (editingCategory) {
         const res = await apiRequest(`/categories/${editingCategory.id}`, {
@@ -79,6 +81,8 @@ export const CategoriesView: React.FC = () => {
       }
     } catch (err: any) {
       setErrorMsg('خطای اتصال به سرور: ' + (err?.message || ''));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -197,7 +201,16 @@ export const CategoriesView: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSubmit(e);
+              }}
+              action="javascript:void(0);"
+              method="POST"
+              className="space-y-3"
+            >
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1">نام دسته‌بندی *</label>
                 <input
@@ -244,9 +257,17 @@ export const CategoriesView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer"
+                  disabled={isSaving}
+                  className="flex-1 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-60 flex items-center justify-center gap-1.5"
                 >
-                  ذخیره
+                  {isSaving ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span>در حال ذخیره...</span>
+                    </>
+                  ) : (
+                    'ذخیره'
+                  )}
                 </button>
               </div>
             </form>

@@ -8,6 +8,39 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+      // Guard against unintended Vite full-reloads caused by filesystem database updates
+      (function() {
+        if (typeof window !== 'undefined' && window.WebSocket) {
+          var OrigWS = window.WebSocket;
+          window.WebSocket = function(url, protocols) {
+            var ws = new OrigWS(url, protocols);
+            var origAddEventListener = ws.addEventListener.bind(ws);
+            ws.addEventListener = function(type, listener, options) {
+              if (type === 'message') {
+                var wrapped = function(event) {
+                  try {
+                    var data = JSON.parse(event.data);
+                    if (data && data.type === 'full-reload') {
+                      var p = String(data.path || '');
+                      if (!p.includes('/src/') || p.includes('data') || p.includes('store.json') || p.includes('backup') || p.includes('server')) {
+                        console.warn('[ViteGuard] Suppressed full-reload for non-source file:', p);
+                        return;
+                      }
+                    }
+                  } catch (_) {}
+                  return listener.apply(this, arguments);
+                };
+                return origAddEventListener(type, wrapped, options);
+              }
+              return origAddEventListener(type, listener, options);
+            };
+            return ws;
+          };
+          window.WebSocket.prototype = OrigWS.prototype;
+        }
+      })();
+    </script>
   </head>
   <body class="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-white">
     <div id="root"></div>

@@ -61,6 +61,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showCameraScanner, setShowCameraScanner] = useState<boolean>(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isGeneratingBarcode, setIsGeneratingBarcode] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
@@ -133,11 +135,13 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
     setShowModal(true);
   };
 
-  const handleGenerateBarcode = async (e?: React.MouseEvent) => {
+  const handleGenerateBarcode = async (e?: React.MouseEvent | React.SyntheticEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
+    if (isGeneratingBarcode) return;
+    setIsGeneratingBarcode(true);
     try {
       const res = await apiRequest<{ barcode: string }>('/products/generate-barcode');
       if (res.success && res.data?.barcode) {
@@ -149,12 +153,15 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
     } catch (_) {
       const fallback = '200' + Math.floor(100000000 + Math.random() * 900000000);
       setFormData((prev) => ({ ...prev, barcode: fallback }));
+    } finally {
+      setIsGeneratingBarcode(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isSaving) return;
     setErrorMsg(null);
 
     if (!formData.name.trim() || formData.salePrice <= 0) {
@@ -162,6 +169,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
       return;
     }
 
+    setIsSaving(true);
     try {
       if (editingProduct) {
         const res = await apiRequest<Product>(`/products/${editingProduct.id}`, {
@@ -194,6 +202,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
       }
     } catch (err: any) {
       setErrorMsg('خطای اتصال به سرور: ' + (err?.message || ''));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -534,7 +544,16 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSubmit(e);
+              }}
+              action="javascript:void(0);"
+              method="POST"
+              className="space-y-4"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-bold text-slate-300 mb-1">نام کامل محصول *</label>
@@ -594,11 +613,20 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => handleGenerateBarcode(e)}
-                      className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer shrink-0"
+                      disabled={isGeneratingBarcode}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleGenerateBarcode(e);
+                      }}
+                      className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-50"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>تولید خودکار</span>
+                      {isGeneratingBarcode ? (
+                        <div className="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      )}
+                      <span>{isGeneratingBarcode ? 'در حال تولید...' : 'تولید خودکار'}</span>
                     </button>
                   </div>
                 </div>
@@ -696,9 +724,19 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer"
+                  disabled={isSaving}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-60 flex items-center justify-center gap-1.5"
                 >
-                  {editingProduct ? 'ذخیره تغییرات' : 'ثبت محصول'}
+                  {isSaving ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span>در حال ثبت...</span>
+                    </>
+                  ) : editingProduct ? (
+                    'ذخیره تغییرات'
+                  ) : (
+                    'ثبت محصول'
+                  )}
                 </button>
               </div>
             </form>

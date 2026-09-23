@@ -752,31 +752,28 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
                     {/* Unit Sale Price with Inline Quick Edit */}
                     {editingPriceIndex === idx ? (
                       <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-[10px] text-amber-400">فی جدید:</span>
-                        <input
-                          type="number"
-                          step="500"
-                          value={tempPriceInput}
-                          onChange={(e) => setTempPriceInput(e.target.value)}
-                          className="w-24 px-2 py-0.5 bg-black/40 border border-amber-500/50 rounded-lg text-xs font-bold text-amber-300 outline-none"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              updateItemPrice(idx, parseFloat(tempPriceInput) || item.unitSalePrice);
-                            }
-                          }}
-                        />
+                        <span className="text-[10px] text-amber-400 shrink-0">فی جدید:</span>
+                        <div className="w-28">
+                          <PriceInput
+                            value={Number(tempPriceInput) || 0}
+                            onChange={(val) => setTempPriceInput(String(val))}
+                            showInWords={false}
+                            unitLabel=""
+                            className="px-2 py-0.5 bg-black/40 border border-amber-500/50 rounded-lg text-xs font-bold text-amber-300 outline-none text-left"
+                            autoFocus
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => updateItemPrice(idx, parseFloat(tempPriceInput) || item.unitSalePrice)}
-                          className="px-2 py-0.5 bg-amber-500 text-slate-950 rounded-lg text-[10px] font-bold cursor-pointer"
+                          className="px-2 py-0.5 bg-amber-500 text-slate-950 rounded-lg text-[10px] font-bold cursor-pointer shrink-0"
                         >
                           تأیید
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditingPriceIndex(null)}
-                          className="text-[10px] text-slate-400 hover:text-white px-1 cursor-pointer"
+                          className="text-[10px] text-slate-400 hover:text-white px-1 cursor-pointer shrink-0"
                         >
                           لغو
                         </button>
