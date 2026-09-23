@@ -17,10 +17,130 @@
       "isActive": true,
       "createdAt": "2026-08-31T19:14:10.608Z",
       "passwordHash": "$2b$10$tOhS3owLQQh6LK4bl5qlYeSpYAuabJAnc6zuDdEiOpgGHmkMKlmBK"
+    },
+    {
+      "id": "u-1790151380329",
+      "username": "hojjat",
+      "name": "حجت جهانتیغ",
+      "role": "ADMIN",
+      "isActive": true,
+      "createdAt": "2026-09-23T08:16:20.329Z",
+      "passwordHash": "$2b$10$oYanrzfihuKTxRL90N1YauztbHTGrDjb4glPGDwSsFwz9cXSF8wvm"
+    }
+  ],
+  "roles": [
+    {
+      "id": "ADMIN",
+      "name": "مدیر کل سیستم",
+      "description": "دسترسی نامحدود و کامل به تمام بخش‌ها، سود خالص، انبار، تنظیمات و مدیریت دسترسی‌ها",
+      "isSystem": true,
+      "color": "amber",
+      "permissions": [
+        "POS_ACCESS",
+        "SALES_VIEW",
+        "SALES_DISCOUNT",
+        "SALES_CANCEL",
+        "PRODUCT_VIEW",
+        "PRODUCT_CREATE",
+        "PRODUCT_EDIT",
+        "PRODUCT_DELETE",
+        "PURCHASE_PRICE_VIEW",
+        "CATEGORIES_MANAGE",
+        "BARCODE_PRINT",
+        "INVENTORY_VIEW",
+        "INVENTORY_ADJUST",
+        "PURCHASES_MANAGE",
+        "SUPPLIERS_MANAGE",
+        "ACCOUNTING_MANAGE",
+        "CUSTOMERS_MANAGE",
+        "DASHBOARD_VIEW",
+        "REPORTS_VIEW",
+        "PROFIT_VIEW",
+        "USERS_MANAGE",
+        "SETTINGS_MANAGE",
+        "BACKUP_MANAGE"
+      ],
+      "createdAt": "2026-09-23T08:28:27.842Z",
+      "updatedAt": "2026-09-23T08:28:27.843Z"
+    },
+    {
+      "id": "SELLER",
+      "name": "صندوق‌دار (فروشنده)",
+      "description": "دسترسی به صندوق فروش، ثبت فاکتور، اعمال تخفیف، بارکدخوان و جستجوی کالاها",
+      "isSystem": true,
+      "color": "blue",
+      "permissions": [
+        "POS_ACCESS",
+        "SALES_VIEW",
+        "SALES_DISCOUNT",
+        "PRODUCT_VIEW",
+        "INVENTORY_VIEW",
+        "CUSTOMERS_MANAGE",
+        "BARCODE_PRINT"
+      ],
+      "createdAt": "2026-09-23T08:28:27.843Z",
+      "updatedAt": "2026-09-23T08:28:27.843Z"
+    },
+    {
+      "id": "ACCOUNTANT",
+      "name": "حسابدار و امور مالی",
+      "description": "مدیریت چک‌ها، هزینه‌های جاری، مانده دفتری مشتریان، تامین‌کنندگان و گزارش سود و زیان",
+      "isSystem": false,
+      "color": "purple",
+      "permissions": [
+        "DASHBOARD_VIEW",
+        "SALES_VIEW",
+        "PURCHASE_PRICE_VIEW",
+        "ACCOUNTING_MANAGE",
+        "CUSTOMERS_MANAGE",
+        "SUPPLIERS_MANAGE",
+        "REPORTS_VIEW",
+        "PROFIT_VIEW"
+      ],
+      "createdAt": "2026-09-23T08:28:27.843Z",
+      "updatedAt": "2026-09-23T08:28:27.843Z"
+    },
+    {
+      "id": "STOCK_KEEPER",
+      "name": "مسئول انبار و تدارکات",
+      "description": "کنترل موجودی کالاها، انبارگردانی، ثبت فاکتورهای ورود بار، دسته‌بندی و چاپ بارکد",
+      "isSystem": false,
+      "color": "emerald",
+      "permissions": [
+        "PRODUCT_VIEW",
+        "PRODUCT_CREATE",
+        "PRODUCT_EDIT",
+        "INVENTORY_VIEW",
+        "INVENTORY_ADJUST",
+        "PURCHASES_MANAGE",
+        "SUPPLIERS_MANAGE",
+        "CATEGORIES_MANAGE",
+        "BARCODE_PRINT"
+      ],
+      "createdAt": "2026-09-23T08:28:27.843Z",
+      "updatedAt": "2026-09-23T08:28:27.843Z"
     }
   ],
   "categories": [],
   "products": [
+    {
+      "id": "prod-1790152908653",
+      "name": "کوکی دابل چاکلت جو دوسر",
+      "sku": "SKU-764743",
+      "barcode": "6260001562844",
+      "categoryId": "cat-1",
+      "purchasePrice": 425000,
+      "salePrice": 475000,
+      "stock": 25,
+      "minimumStock": 5,
+      "unit": "PIECE",
+      "isWeighted": false,
+      "description": "",
+      "image": "/src/assets/images/mixed_nuts_1790151580149.jpg",
+      "isActive": true,
+      "createdAt": "2026-09-23T08:41:48.653Z",
+      "updatedAt": "2026-09-23T10:13:25.313Z"
+    },
     {
       "id": "prod-1790142923505",
       "name": "تست محصول جدید",
@@ -34,10 +154,10 @@
       "unit": "KG",
       "isWeighted": true,
       "description": "",
-      "image": "",
+      "image": "/src/assets/images/pistachio_nuts_1790151537379.jpg",
       "isActive": true,
       "createdAt": "2026-09-23T05:55:23.505Z",
-      "updatedAt": "2026-09-23T05:55:23.505Z"
+      "updatedAt": "2026-09-23T08:31:51.513Z"
     },
     {
       "id": "prod-1789313062416",
@@ -115,6 +235,19 @@
   ],
   "purchases": [],
   "stockMovements": [
+    {
+      "id": "sm-1790152908653",
+      "productId": "prod-1790152908653",
+      "productName": "کوکی دابل چاکلت جو دوسر",
+      "type": "INITIAL_STOCK",
+      "quantity": 25,
+      "previousStock": 0,
+      "newStock": 25,
+      "userId": "u-admin-1",
+      "userName": "هادی جهانتیغ (مدیر فروشگاه)",
+      "notes": "ثبت محصول جدید با موجودی اولیه",
+      "createdAt": "2026-09-23T08:41:48.653Z"
+    },
     {
       "id": "sm-1790142923505",
       "productId": "prod-1790142923505",
@@ -204,7 +337,7 @@
     "storePhone": "",
     "storeAddress": "خراسان رضوی - نیشابور - خیابان خاتم النبین جنوبی ",
     "logoText": "برادران جهانتیغ",
-    "currency": "تومان",
+    "currency": "ریال",
     "taxRate": 0,
     "receiptFooter": "از خرید و اعتماد شما صمیمانه سپاسگزاریم. لطفاً در حفظ فاکتور کوشا باشید.",
     "receiptTemplate": "CLASSIC_80",

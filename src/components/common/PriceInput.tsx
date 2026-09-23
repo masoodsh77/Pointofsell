@@ -65,14 +65,6 @@ export const PriceInput: React.FC<PriceInputProps> = ({
 
   const [displayValue, setDisplayValue] = useState<string>(() => formatVal(value));
 
-  // Synchronize when value or currency changes externally
-  useEffect(() => {
-    const currentNumeric = parseInt(toEnglishDigits(displayValue).replace(/[^\d-]/g, ''), 10) || 0;
-    const targetNumeric = toDisplay(value);
-    if (currentNumeric !== targetNumeric) {
-      setDisplayValue(formatVal(value));
-    }
-  }, [value, isRial]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
@@ -82,7 +74,7 @@ export const PriceInput: React.FC<PriceInputProps> = ({
     // Count non-comma characters before cursor
     const rawBeforeCursor = raw.slice(0, cursorPosition).replace(/,/g, '');
     const digitsBeforeCursor = toEnglishDigits(rawBeforeCursor).replace(/[^\d-]/g, '').length;
-
+    
     // Convert Persian/Arabic digits to English digits
     let cleaned = toEnglishDigits(raw);
 

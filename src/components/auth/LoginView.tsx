@@ -101,7 +101,7 @@ export const LoginView: React.FC = () => {
           </form>
 
           {/* Quick Login for Instant Demo / Testing */}
-          <div className="pt-4 border-t border-white/5">
+          {/* <div className="pt-4 border-t border-white/5">
             <div className="text-[11px] font-bold text-slate-400 text-center mb-3">
               حساب‌های آزمایشی برای ورود سریع:
             </div>
@@ -132,7 +132,7 @@ export const LoginView: React.FC = () => {
                 <div className="text-[10px] text-blue-400/80 mt-0.5">رمز: Seller@123</div>
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

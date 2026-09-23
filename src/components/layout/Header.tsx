@@ -92,30 +92,6 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Center: Search Trigger Bar */}
-        {onOpenSearch && (
-          <div className="hidden md:flex flex-1 max-w-md mx-2">
-            <button
-              id="header-menu-search-btn"
-              type="button"
-              onClick={onOpenSearch}
-              className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 text-slate-300 hover:text-white transition-all cursor-pointer group shadow-inner"
-              title="جستجو در تمام منوها، تنظیمات، واحد پول و بخش‌ها (Ctrl + K)"
-            >
-              <div className="flex items-center gap-2.5">
-                <Search className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span className="text-xs text-slate-400 group-hover:text-slate-200 transition-colors">
-                  جستجو در منوها و تنظیمات...
-                </span>
-              </div>
-              <kbd className="inline-flex items-center gap-1 text-[10px] font-mono bg-white/10 text-slate-400 group-hover:text-amber-300 px-2 py-0.5 rounded-lg border border-white/10 transition-colors">
-                <span>Ctrl</span>
-                <span>K</span>
-              </kbd>
-            </button>
-          </div>
-        )}
-
         {/* Left side: Mobile Search + Currency Switcher + Theme + Camera + Low Stock + User Profile + Logout */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {/* Mobile Search Button */}
