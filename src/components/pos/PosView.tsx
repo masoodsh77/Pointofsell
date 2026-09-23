@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Product, Category, Customer, PaymentMethod, Sale, StoreSettings } from '../../types';
 import { apiRequest } from '../../services/api';
+import { useCurrency } from '../../context/CurrencyContext';
 import {
   formatCurrency,
   formatNumber,
@@ -51,6 +52,7 @@ interface PosViewProps {
 }
 
 export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => {
+  const { unitLabel } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -995,10 +997,10 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
                   type="button"
                   onClick={() => setDiscountMode('AMOUNT')}
                   className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
-                    discountMode === 'AMOUNT' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
+                    discountMode === 'AMOUNT' || discountMode === 'FIXED' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  مبلغی (تومان)
+                  مبلغی ({unitLabel})
                 </button>
                 <button
                   type="button"
@@ -1013,13 +1015,13 @@ export const PosView: React.FC<PosViewProps> = ({ settings, onRefreshData }) => 
             </div>
 
             <div className="flex items-center gap-2">
-              {discountMode === 'FIXED' ? (
+              {discountMode === 'AMOUNT' || discountMode === 'FIXED' ? (
                 <div className="flex-1">
                   <PriceInput
                     value={discountValue || 0}
                     onChange={(val) => setDiscountValue(val)}
                     showInWords={false}
-                    placeholder="مبلغ تخفیف (تومان)"
+                    placeholder={`مبلغ تخفیف (${unitLabel})`}
                     className="py-1.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white placeholder-slate-600 focus:border-amber-500 outline-none"
                   />
                 </div>

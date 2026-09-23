@@ -59,7 +59,12 @@ export function formatCurrency(
   customSuffix?: string
 ): string {
   const activeCurr = currentAppCurrency;
-  const isRial = (customSuffix === 'ریال') || (customSuffix === undefined && activeCurr === 'ریال');
+  const isRial =
+    customSuffix === 'ریال'
+      ? true
+      : customSuffix === 'تومان'
+      ? false
+      : activeCurr === 'ریال';
 
   if (amount === undefined || amount === null || isNaN(Number(amount))) {
     const unit = customSuffix !== undefined ? customSuffix : activeCurr;
@@ -76,6 +81,26 @@ export function formatCurrency(
 
   const unit = customSuffix !== undefined ? customSuffix : activeCurr;
   return `${formatted} ${unit}`.trim();
+}
+
+// Format price converted to Persian words in active currency (multiplied by 10 in Rial)
+export function formatCurrencyInWords(
+  amount: number | string | undefined | null,
+  customSuffix?: string
+): string {
+  const activeCurr = currentAppCurrency;
+  const isRial =
+    customSuffix === 'ریال'
+      ? true
+      : customSuffix === 'تومان'
+      ? false
+      : activeCurr === 'ریال';
+  const rawNum = Math.abs(Math.round(Number(toEnglishDigits(amount || 0))));
+  if (isNaN(rawNum)) return '';
+  const calculated = isRial ? rawNum * 10 : rawNum;
+  const unit = customSuffix !== undefined ? customSuffix : activeCurr;
+  if (calculated === 0) return `صفر ${unit}`.trim();
+  return `${numberToPersianWords(calculated)} ${unit}`.trim();
 }
 
 // Convert numbers into Persian words (e.g. 1,500,000 -> یک میلیون و پانصد هزار)

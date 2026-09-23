@@ -6,6 +6,7 @@ import {
   formatPersianDate,
   toPersianDigits
 } from '../../utils/persian';
+import { useCurrency } from '../../context/CurrencyContext';
 import { PriceInput } from '../common/PriceInput';
 import {
   Calculator,
@@ -47,6 +48,7 @@ const EXPENSE_CATEGORIES = [
 ];
 
 export const AccountingView: React.FC<AccountingViewProps> = ({ currentUser }) => {
+  const { unitLabel } = useCurrency();
   const [activeTab, setActiveTab] = useState<'EXPENSES' | 'CHEQUES'>('EXPENSES');
 
   // Expenses State
@@ -486,7 +488,7 @@ export const AccountingView: React.FC<AccountingViewProps> = ({ currentUser }) =
                   <tr>
                     <th className="py-3.5 px-4">عنوان هزینه</th>
                     <th className="py-3.5 px-3">دسته‌بندی</th>
-                    <th className="py-3.5 px-3">مبلغ (تومان)</th>
+                    <th className="py-3.5 px-3">مبلغ ({unitLabel})</th>
                     <th className="py-3.5 px-3">طرف حساب / دریافت‌کننده</th>
                     <th className="py-3.5 px-3">روش پرداخت</th>
                     <th className="py-3.5 px-3">شماره پیگیری</th>
@@ -829,7 +831,7 @@ export const AccountingView: React.FC<AccountingViewProps> = ({ currentUser }) =
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">مبلغ هزینه (تومان) *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">مبلغ هزینه ({unitLabel}) *</label>
                   <PriceInput
                     required
                     value={Number(expAmount) || 0}
@@ -1023,12 +1025,12 @@ export const AccountingView: React.FC<AccountingViewProps> = ({ currentUser }) =
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">مبلغ چک (تومان) *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">مبلغ چک ({unitLabel}) *</label>
                   <PriceInput
                     required
                     value={Number(chqAmount) || 0}
                     onChange={(val) => setChqAmount(String(val))}
-                    placeholder="مبلغ به تومان"
+                    placeholder={`مبلغ به ${unitLabel}`}
                     className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   />
                 </div>

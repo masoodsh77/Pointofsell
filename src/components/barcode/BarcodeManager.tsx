@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Product, StoreSettings } from '../../types';
 import { apiRequest } from '../../services/api';
 import { formatCurrency, formatNumber, getUnitLabel, toPersianDigits } from '../../utils/persian';
+import { useCurrency } from '../../context/CurrencyContext';
 import { getSafePriceFontClass, ShelfTagSize, FontSizeScale } from '../products/ShelfPriceTagModal';
 import { BarcodeSvg } from '../common/BarcodeSvg';
 import {
@@ -29,6 +30,7 @@ interface BarcodeManagerProps {
 type PrintMode = 'STICKER_BARCODE' | 'SHELF_TAG';
 
 export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
+  const { toDisplayPrice, unitLabel, formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
   const [printMode, setPrintMode] = useState<PrintMode>('SHELF_TAG');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
@@ -314,7 +316,7 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
               >
                 {filteredProducts.map((p) => (
                   <option key={p.id} value={p.id} className="bg-[#1e1e1e] text-white">
-                    {p.name} - قیمت: {formatNumber(p.salePrice)} تومان
+                    {p.name} - قیمت: {formatPrice(p.salePrice)}
                   </option>
                 ))}
               </select>
@@ -609,7 +611,8 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
                           : product.name
                         : '';
 
-                      const formattedPrice = formatNumber(product.salePrice);
+                      const displayPrice = toDisplayPrice(product.salePrice);
+                      const formattedPrice = formatNumber(displayPrice);
                       const priceFontClass = getSafePriceFontClass(formattedPrice, shelfTagSize, fontScale);
 
                       let cardMinHeight = 'min-h-[170px] p-4';
@@ -698,7 +701,7 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
                               </div>
 
                               <div className="text-xs sm:text-sm font-black text-slate-700 mt-1 tracking-wider">
-                                تومان
+                                {unitLabel}
                               </div>
 
                               {showUnitText && (
@@ -781,10 +784,10 @@ export const BarcodeManager: React.FC<BarcodeManagerProps> = ({ settings }) => {
                               className="text-2xl sm:text-3xl font-black text-slate-950 font-sans tracking-tight truncate w-full"
                               style={{ fontVariantNumeric: 'tabular-nums' }}
                             >
-                              {formatNumber(selectedProduct.salePrice)}
+                              {formatNumber(toDisplayPrice(selectedProduct.salePrice))}
                             </div>
                             <div className="text-[11px] font-black text-slate-700 mt-0.5">
-                              تومان
+                              {unitLabel}
                             </div>
                           </div>
                         )}

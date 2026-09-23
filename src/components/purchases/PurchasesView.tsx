@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Purchase, Supplier, Product } from '../../types';
 import { apiRequest } from '../../services/api';
+import { useCurrency } from '../../context/CurrencyContext';
 import {
   formatCurrency,
   formatPersianDate,
@@ -33,6 +34,7 @@ interface PurchasesViewProps {
 }
 
 export const PurchasesView: React.FC<PurchasesViewProps> = ({ onRefreshData }) => {
+  const { unitLabel } = useCurrency();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -442,7 +444,7 @@ export const PurchasesView: React.FC<PurchasesViewProps> = ({ onRefreshData }) =
                             <th className="py-2.5 px-4">نام کالا / محصول</th>
                             <th className="py-2.5 px-3">مقدار / وزن</th>
                             <th className="py-2.5 px-3">قیمت خرید واحد (فی)</th>
-                            <th className="py-2.5 px-4">جمع ردیف (تومان)</th>
+                            <th className="py-2.5 px-4">جمع ردیف ({unitLabel})</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-slate-200">

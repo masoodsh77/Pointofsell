@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { ThemeColor, FontFamily, FontSize } from '../../types';
+import { formatCurrency } from '../../utils/persian';
 import { Palette, Type, Check, X, Sparkles, Sliders } from 'lucide-react';
 
 interface ThemeSelectorModalProps {
@@ -159,7 +160,7 @@ export const ThemeSelectorModal: React.FC<ThemeSelectorModalProps> = ({
           <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-2">
             <div className="text-[11px] font-bold text-slate-400">پیش‌نمایش زنده ظاهر و قلم:</div>
             <div className="text-sm font-bold text-white">
-              پسته اکبری درجه یک رفسنجان - ۱,۲۵۰,۰۰۰ تومان
+              پسته اکبری درجه یک رفسنجان - {formatCurrency(1250000)}
             </div>
             <div className="text-xs text-slate-300">
               «فروشگاه آجیل و خشکبار زعفران طلایی - مجهز به سیستم پیشرفته صندوق فروشگاهی»

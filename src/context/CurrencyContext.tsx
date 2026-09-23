@@ -44,6 +44,34 @@ export const CurrencyProvider: React.FC<{
     }
   }, [initialCurrency]);
 
+  // Listen to cross-component currency change events & sync on mount
+  useEffect(() => {
+    const handleCurrencyEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<CurrencyUnit>;
+      if (customEvent.detail && (customEvent.detail === 'ریال' || customEvent.detail === 'تومان')) {
+        setCurrencyState(customEvent.detail);
+      }
+    };
+    window.addEventListener('nuts_currency_changed', handleCurrencyEvent);
+
+    // If initial currency was not provided, check server settings
+    if (!initialCurrency) {
+      apiRequest<any>('/settings')
+        .then((res) => {
+          if (res.success && res.data?.currency) {
+            const serverUnit = res.data.currency === 'ریال' ? 'ریال' : 'تومان';
+            setCurrencyState(serverUnit);
+            setPersianAppCurrency(serverUnit);
+          }
+        })
+        .catch(() => {});
+    }
+
+    return () => {
+      window.removeEventListener('nuts_currency_changed', handleCurrencyEvent);
+    };
+  }, [initialCurrency]);
+
   const multiplier = currency === 'ریال' ? 10 : 1;
   const isRial = currency === 'ریال';
   const unitLabel = currency;

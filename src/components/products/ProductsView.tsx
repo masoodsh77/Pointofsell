@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, Category, ProductUnit, StoreSettings } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { apiRequest } from '../../services/api';
 import {
   formatCurrency,
@@ -39,6 +40,7 @@ interface ProductsViewProps {
 
 export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshData }) => {
   const { isAdmin } = useAuth();
+  const { unitLabel } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -417,8 +419,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                 <th className="py-3.5 px-3">دسته‌بندی</th>
                 <th className="py-3.5 px-3">بارکد</th>
                 <th className="py-3.5 px-3">موجودی انبار</th>
-                {isAdmin && <th className="py-3.5 px-3">قیمت خرید</th>}
-                <th className="py-3.5 px-3">قیمت فروش</th>
+                {isAdmin && <th className="py-3.5 px-3">قیمت خرید ({unitLabel})</th>}
+                <th className="py-3.5 px-3">قیمت فروش ({unitLabel})</th>
                 <th className="py-3.5 px-3">نوع فروش</th>
                 {isAdmin && <th className="py-3.5 px-4 text-center">عملیات</th>}
               </tr>
@@ -632,7 +634,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">قیمت خرید (تومان)</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">قیمت خرید ({unitLabel})</label>
                   <PriceInput
                     value={formData.purchasePrice}
                     onChange={(val) => setFormData({ ...formData, purchasePrice: val })}
@@ -642,7 +644,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ settings, onRefreshD
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">قیمت فروش (تومان) *</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">قیمت فروش ({unitLabel}) *</label>
                   <PriceInput
                     required
                     value={formData.salePrice}

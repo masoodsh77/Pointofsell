@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, StoreSettings } from '../../types';
 import { formatNumber, getUnitLabel, toPersianDigits } from '../../utils/persian';
+import { useCurrency } from '../../context/CurrencyContext';
 import { BarcodeSvg } from '../common/BarcodeSvg';
 import {
   Printer,
@@ -128,6 +129,7 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
   products,
   settings,
 }) => {
+  const { toDisplayPrice, unitLabel } = useCurrency();
   const [tagSize, setTagSize] = useState<ShelfTagSize>('LARGE_STAND');
   const [fontScale, setFontScale] = useState<FontSizeScale>('GIGANTIC');
   const [copiesPerProduct, setCopiesPerProduct] = useState<number>(1);
@@ -470,7 +472,8 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                       : product.name
                     : '';
 
-                  const formattedPrice = formatNumber(product.salePrice);
+                  const displayPrice = toDisplayPrice(product.salePrice);
+                  const formattedPrice = formatNumber(displayPrice);
                   const priceFontClass = getSafePriceFontClass(formattedPrice, tagSize, fontScale);
 
                   // Card sizing
@@ -558,9 +561,9 @@ export const ShelfPriceTagModal: React.FC<ShelfPriceTagModalProps> = ({
                           {formattedPrice}
                         </div>
 
-                        {/* "تومان" placed cleanly beneath the number to preserve 100% horizontal width for digits */}
+                        {/* Unit label placed cleanly beneath the number to preserve 100% horizontal width for digits */}
                         <div className="text-xs sm:text-sm font-black text-slate-700 mt-1 tracking-wider">
-                          تومان
+                          {unitLabel}
                         </div>
 
                         {showUnitText && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiRequest } from '../../services/api';
 import { formatCurrency, formatPersianDate, toPersianDigits } from '../../utils/persian';
+import { useCurrency } from '../../context/CurrencyContext';
 import {
   BarChart3,
   TrendingUp,
@@ -31,6 +32,7 @@ import {
 } from 'recharts';
 
 export const ReportsView: React.FC = () => {
+  const { unitLabel, toDisplayPrice } = useCurrency();
   const [period, setPeriod] = useState<string>('30DAYS');
   const [loading, setLoading] = useState<boolean>(true);
   const [reportData, setReportData] = useState<any>(null);
@@ -51,11 +53,11 @@ export const ReportsView: React.FC = () => {
   const handleExportCSV = () => {
     if (!reportData) return;
     const rows = [
-      ['تاریخ', 'فروش (تومان)', 'سود خالص (تومان)', 'تعداد فاکتور'],
+      ['تاریخ', `فروش (${unitLabel})`, `سود خالص (${unitLabel})`, 'تعداد فاکتور'],
       ...reportData.timeline.map((t: any) => [
         t.date,
-        t.revenue,
-        t.profit,
+        toDisplayPrice(t.revenue),
+        toDisplayPrice(t.profit),
         t.count,
       ]),
     ];

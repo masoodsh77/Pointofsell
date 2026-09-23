@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Product, Category } from '../../types';
 import { apiRequest } from '../../services/api';
 import { formatCurrency, toPersianDigits } from '../../utils/persian';
+import { useCurrency } from '../../context/CurrencyContext';
 import { PriceInput } from '../common/PriceInput';
 import {
   TrendingUp,
@@ -30,6 +31,7 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { unitLabel } = useCurrency();
   const [scope, setScope] = useState<'SELECTED' | 'ALL' | 'CATEGORY'>(
     selectedProductIds.length > 0 ? 'SELECTED' : 'ALL'
   );
@@ -312,7 +314,7 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
                   }`}
                 >
                   <Coins className="w-4 h-4" />
-                  <span>مبلغ ثابت (تومان)</span>
+                  <span>مبلغ ثابت ({unitLabel})</span>
                 </button>
               </div>
             </div>
@@ -322,7 +324,7 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-2">
-                {mode === 'PERCENT' ? 'میزان درصد تغییر:' : 'مبلغ تغییر (تومان):'}
+                {mode === 'PERCENT' ? 'میزان درصد تغییر:' : `مبلغ تغییر (${unitLabel}):`}
               </label>
               {mode === 'FIXED' ? (
                 <PriceInput
@@ -361,9 +363,9 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
                 className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:border-amber-500 outline-none"
               >
                 <option value={0}>بدون رُند کردن (دقیق)</option>
-                <option value={1000}>رُند به نزدیک‌ترین ۱,۰۰۰ تومان</option>
-                <option value={5000}>رُند به نزدیک‌ترین ۵,۰۰۰ تومان</option>
-                <option value={10000}>رُند به نزدیک‌ترین ۱۰,۰۰۰ تومان</option>
+                <option value={1000}>رُند به نزدیک‌ترین {formatCurrency(1000)}</option>
+                <option value={5000}>رُند به نزدیک‌ترین {formatCurrency(5000)}</option>
+                <option value={10000}>رُند به نزدیک‌ترین {formatCurrency(10000)}</option>
               </select>
             </div>
           </div>
@@ -380,8 +382,8 @@ export const BulkPriceUpdateModal: React.FC<BulkPriceUpdateModalProps> = ({
                 <thead className="bg-white/5 text-slate-400 border-b border-white/10 sticky top-0">
                   <tr>
                     <th className="p-2.5">نام محصول</th>
-                    <th className="p-2.5 text-center">قیمت فعلی</th>
-                    <th className="p-2.5 text-center">قیمت جدید</th>
+                    <th className="p-2.5 text-center">قیمت فعلی ({unitLabel})</th>
+                    <th className="p-2.5 text-center">قیمت جدید ({unitLabel})</th>
                     <th className="p-2.5 text-left">تغییر</th>
                   </tr>
                 </thead>

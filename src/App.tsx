@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { CurrencyProvider } from './context/CurrencyContext';
+import { CurrencyProvider, useCurrency } from './context/CurrencyContext';
 import { StoreSettings } from './types';
 import { apiRequest } from './services/api';
 
@@ -29,6 +29,7 @@ import { DashboardView } from './components/dashboard/DashboardView';
 
 const MainLayout: React.FC = () => {
   const { user, isAdmin, isLoading } = useAuth();
+  const { currency, setCurrency } = useCurrency();
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     try {
       const saved = localStorage.getItem('nuts_pos_active_tab') as TabType;
@@ -54,6 +55,9 @@ const MainLayout: React.FC = () => {
 
       if (settingsRes.success && settingsRes.data) {
         setSettings(settingsRes.data);
+        if (settingsRes.data.currency === 'ریال' || settingsRes.data.currency === 'تومان') {
+          setCurrency(settingsRes.data.currency, false);
+        }
       }
       if (invRes.success && invRes.data) {
         const lowCount = invRes.data.items.filter((i) => i.isLowStock).length;
@@ -62,7 +66,7 @@ const MainLayout: React.FC = () => {
     } catch (err) {
       console.error('Failed to load initial data:', err);
     }
-  }, [user]);
+  }, [user, setCurrency]);
 
   // Initial load & initial tab setup (runs once per user authentication, never resets active tab on data refresh)
   useEffect(() => {
@@ -194,7 +198,7 @@ const MainLayout: React.FC = () => {
           onOpenSearch={() => setIsSearchOpen(true)}
         />
 
-        <main className="flex-1 overflow-y-auto min-w-0 pb-16 lg:pb-0 bg-[#0a0a0a]">
+        <main key={currency} className="flex-1 overflow-y-auto min-w-0 pb-16 lg:pb-0 bg-[#0a0a0a]">
           {activeTab === 'dashboard' && isAdmin && (
             <DashboardView onNavigate={(tab) => handleSelectTab(tab)} />
           )}

@@ -4,7 +4,8 @@ import {
   formatPersianDate,
   formatWeightOrQuantity,
   getPaymentMethodLabel,
-  toPersianDigits
+  toPersianDigits,
+  getAppCurrency
 } from './persian';
 
 /**
@@ -284,7 +285,7 @@ export function generateReceiptHtml(
               <th style="width: 15%;">مقدار / تعداد</th>
               <th style="width: 15%;">مبلغ واحد (فی)</th>
               <th style="width: 10%;">تخفیف</th>
-              <th style="width: 15%; text-align: left;">مبلغ کل (تومان)</th>
+              <th style="width: 15%; text-align: left;">مبلغ کل (${settings?.currency || getAppCurrency()})</th>
             </tr>
           </thead>
           <tbody>${itemsHtml}</tbody>

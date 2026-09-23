@@ -9,6 +9,7 @@ import {
   toPersianDigits
 } from '../../utils/persian';
 import { printReceipt } from '../../utils/printReceipt';
+import { useCurrency } from '../../context/CurrencyContext';
 import { PriceInput } from '../common/PriceInput';
 import {
   FileText,
@@ -43,6 +44,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   onClose,
   onCustomerUpdated,
 }) => {
+  const { unitLabel } = useCurrency();
   const [activeTab, setActiveTab] = useState<'INVOICES' | 'TRANSACTIONS' | 'SETTLE'>('INVOICES');
   const [invoices, setInvoices] = useState<Sale[]>([]);
   const [transactions, setTransactions] = useState<CustomerTransaction[]>([]);
@@ -401,7 +403,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1">
-                  مبلغ تراکنش (تومان): <span className="text-rose-400">*</span>
+                  مبلغ تراکنش ({unitLabel}): <span className="text-rose-400">*</span>
                 </label>
                 <PriceInput
                   required

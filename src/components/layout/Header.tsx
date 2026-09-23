@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useCurrency } from '../../context/CurrencyContext';
 import { StoreSettings } from '../../types';
 import { formatPersianDate, toPersianDigits } from '../../utils/persian';
 import { ThemeSelectorModal } from '../common/ThemeSelectorModal';
@@ -16,7 +15,6 @@ import {
   Camera,
   Palette,
   Search,
-  Coins,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -39,7 +37,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
 }) => {
   const { user, logout, isAdmin } = useAuth();
-  const { currency, toggleCurrency } = useCurrency();
   const [timeStr, setTimeStr] = useState<string>('');
   const [showThemeModal, setShowThemeModal] = useState<boolean>(false);
 
@@ -133,30 +130,6 @@ export const Header: React.FC<HeaderProps> = ({
               <Search className="w-4 h-4" />
             </button>
           )}
-
-          {/* Currency Switcher Badge */}
-          <button
-            id="header-currency-toggle-btn"
-            type="button"
-            onClick={toggleCurrency}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-xs font-bold transition-all cursor-pointer group"
-            title={`واحد پولی: ${currency} (جهت تغییر سریع کلیک کنید)`}
-          >
-            <Coins className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-            <span className="text-slate-400 hidden sm:inline text-[11px]">واحد:</span>
-            <span
-              className={`px-2 py-0.5 rounded-lg text-xs font-black transition-colors ${
-                currency === 'ریال'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-              }`}
-            >
-              {currency}
-            </span>
-            <span className="text-[10px] text-slate-500 hidden xl:inline font-mono">
-              {currency === 'ریال' ? '(۱۰x)' : '(معمولی)'}
-            </span>
-          </button>
 
           {/* Quick Theme Selector Button */}
           <button

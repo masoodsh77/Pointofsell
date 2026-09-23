@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Customer, StoreSettings } from '../../types';
 import { apiRequest } from '../../services/api';
 import { formatCurrency, formatPersianDate, toPersianDigits } from '../../utils/persian';
+import { useCurrency } from '../../context/CurrencyContext';
 import { CustomerDetailModal } from './CustomerDetailModal';
 import { PriceInput } from '../common/PriceInput';
 import {
@@ -26,6 +27,7 @@ interface CustomersViewProps {
 }
 
 export const CustomersView: React.FC<CustomersViewProps> = ({ settings = null }) => {
+  const { unitLabel } = useCurrency();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterType, setFilterType] = useState<'ALL' | 'DEBTORS' | 'CREDITORS' | 'DISCOUNT'>('ALL');
@@ -514,7 +516,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ settings = null })
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-slate-300 mb-1">یا مبلغ تخفیف ثابت (تومان):</label>
+                    <label className="block text-[11px] text-slate-300 mb-1">یا مبلغ تخفیف ثابت ({unitLabel}):</label>
                     <PriceInput
                       value={Number(fixedDiscountAmount) || 0}
                       onChange={(val) => setFixedDiscountAmount(String(val))}
@@ -529,7 +531,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ settings = null })
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">
-                    مانده اولیه تراز حساب (تومان):
+                    مانده اولیه تراز حساب ({unitLabel}):
                   </label>
                   <PriceInput
                     allowNegative
@@ -545,7 +547,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({ settings = null })
 
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">
-                    سقف اعتبار نسیه (تومان):
+                    سقف اعتبار نسیه ({unitLabel}):
                   </label>
                   <PriceInput
                     value={Number(maxCreditLimit) || 0}
